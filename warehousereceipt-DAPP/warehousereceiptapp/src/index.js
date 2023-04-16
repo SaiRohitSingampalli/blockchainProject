@@ -2,7 +2,7 @@ var express = require('express');
 var app = express();
 
 app.use(express.static('src'));
-//app.use(express.static(''));
+app.use(express.static('../../build/contracts'));
 
 app.get('/', function (req, res) {
   res.render('index.html');
