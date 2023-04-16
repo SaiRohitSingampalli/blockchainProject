@@ -18,6 +18,33 @@
         min-height: 100vh;
         margin: 0;
       }
+      .about-section {
+        position: absolute;
+        top: 0;
+        right: 10px;
+        display: flex;
+        flex-direction: column;
+      }
+      #about-button {
+        background-color: rgb(6, 244, 137);
+        border: none;
+        color: black;
+        padding: 10px;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      #about-description {
+        display: none;
+        background-color: white;
+        border: 1px solid black;
+        padding: 10px;
+        margin-top: 10px;
+        max-width: 400px;
+      }
+      #about-button:focus + #about-description {
+        display: block;
+      }
+
       .row {
         border: 1px solid black;
         padding: 10px;
@@ -54,6 +81,15 @@
       </label>
       <button id="grant-access">Grant</button>
       <button id="revoke-access">Revoke</button>
+    </div>
+    <div class="about-section">
+      <button id="about-button">About</button>
+      <div id="about-description">
+        <h3>About Digital Warehouse Receipts</h3>
+        <p>
+          This web page is a tool for managing digital warehouse receipts. It allows warehouse managers to grant or revoke access to the warehouse, create new receipts, and destroy existing receipts. The page also provides a total count of active receipts. 
+        </p>
+      </div>
     </div>
     <div class="row receipt-form">
       <h2>Create Receipt</h2>
