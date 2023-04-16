@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Digital Warhouse Receipts</title>
+    <style>
+      h1 {
+        text-align: center;
+        background-color: white;
+        color: black;
+        width: 100%;
+        margin: 0;
+      }
+      body {
+        background-image: url("C:/Users/Pavan Kumar Chella/Box/Spring2023/Blockchain/image.PNG");
+        background-size: cover;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        margin: 0;
+      }
+      .row {
+        border: 1px solid black;
+        padding: 10px;
+        margin: 10px;
+      }
+      .moderator {
+        background-color: lightgray;
+      }
+      .receipt-form {
+        background-color: lightblue;
+      }
+      .destroy-receipt {
+        background-color: lightgray;
+      }
+      #total-receipt-count {
+        display: block;
+        margin: auto;
+        padding: 10px;
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: lightblue;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Digital Warehouse Receipts</h1>
+    <div class="row moderator">
+      <h2>Warehouse Access</h2>
+      <label class="subs-title">
+        <b>Address: </b>&nbsp;
+        <input type="text" class="address" id="seller-address" placeholder="Enter address"></input>
+      </label>
+      <button id="grant-access">Grant</button>
+      <button id="revoke-access">Revoke</button>
+    </div>
+    <div class="row receipt-form">
+      <h2>Create Receipt</h2>
+      <label class="subs-title">
+        <b>Seller Name:</b>&nbsp;
+        <input type="text" class="name" id="seller-name" placeholder="Enter name"></input>
+      </label>
+      <label class="subs-title">
+        <b>Seller Address:</b>&nbsp;
+        <input type="text" class="address" id="seller-address" placeholder="Enter address"></input>
+      </label>
+      <label class="subs-title">
+        <b>Price:</b>&nbsp;
+        <input type="number" class="price" id="price" placeholder="Enter price"></input>
+      </label>
+      <button id="generate-receipt">Generate Receipt</button>
+    </div>
+    <div class="row destroy-receipt">
+      <h2>Destroy Receipt</h2>
+      <label class="subs-title">
+        <b>Receipt Number:</b>&nbsp;
+        <input type="number" class="receipt-number" id="receipt-number" placeholder="Enter receipt number"></input>
+      </label>
+      <button id="destroy-receipt">Destroy Receipt</button>
+    </div>
+    <button id="total-receipt-count">Total Active Receipt Count</button>
+  </body>
+</html>
