@@ -3,24 +3,13 @@ App = {
   contracts: {},
   names: new Array(),
   url: 'http://127.0.0.1:7545',
+  backendUrl: 'http://localhost:3000',
   // network_id: 5777,
   chairPerson: null,
   currentAccount: null,
-  biddingPhases: {
-    "AuctionInit": { 'id': 0, 'text': "Bidding Not Started" },
-    "BiddingStarted": { 'id': 1, 'text': "Bidding Started" },
-    "RevealStarted": { 'id': 2, 'text': "Reveal Started" },
-    "AuctionEnded": { 'id': 3, 'text': "Auction Ended" }
-  },
-  auctionPhases: {
-    "0": "Bidding Not Started",
-    "1": "Bidding Started",
-    "2": "Reveal Started",
-    "3": "Auction Ended"
-  },
 
   init: function () {
-    console.log("Checkpoint 0");
+    // console.log("Checkpoint 0");
     return App.initWeb3();
   },
 
@@ -39,229 +28,95 @@ App = {
   },
 
   initContract: function () {
-    $.getJSON('BlindAuction.json', function (data) {
+    $.getJSON('DigitalWarehouseReceipt.json', function (data) {
       // Get the necessary contract artifact file and instantiate it with truffle-contract
-      var voteArtifact = data;
-      App.contracts.vote = TruffleContract(voteArtifact);
-      App.contracts.mycontract = data;
-      // Set the provider for our contract
-      App.contracts.vote.setProvider(App.web3Provider);
-      App.currentAccount = web3.eth.coinbase;
-      jQuery('#current_account').text(App.currentAccount);
-      App.getCurrentPhase();
-      App.getChairperson();
+
+      var receiptArtifact = data;
+      App.contracts.receipts = TruffleContract(receiptArtifact);
+      App.contracts.receipts.setProvider(App.web3Provider);
       return App.bindEvents();
     });
   },
 
   bindEvents: function () {
-    $(document).on('click', '#submit-bid', App.handleBid);
-    $(document).on('click', '#change-phase', App.handlePhase);
-    $(document).on('click', '#generate-winner', App.handleWinner);
-    $(document).on('click', '#submit-reveal', App.handleReveal);
-    $(document).on('click', '#close-auction', App.handleClose);
-    $(document).on('click', '#withdraw-bid', App.handleWithdraw);
 
-    //$(document).on('click', '#register', function(){ var ad = $('#enter_address').val(); App.handleRegister(ad); });
-  },
-
-  populateAddress: function () {
-    new Web3(new Web3.providers.HttpProvider(App.url)).eth.getAccounts((err, accounts) => {
-      jQuery.each(accounts, function (i) {
-        if (web3.eth.coinbase != accounts[i]) {
-          var optionElement = '<option value="' + accounts[i] + '">' + accounts[i] + '</option';
-          jQuery('#enter_address').append(optionElement);
-        }
-      });
+    $(document).on("click", "#grant-access", function () {
+      App.handleGrantAccess(jQuery("#seller-address").val());
     });
+    $(document).on("click", "#revoke-access", function () {
+      App.handleGrantAccess(jQuery("#seller-address").val());
+    });
+    $("form").submit(App.handleCreateWarehouseReceipt);
+
   },
 
-  getCurrentPhase: function() {
-    App.contracts.vote.deployed().then(function(instance) {
-      return instance.currentPhase();
-    }).then(function(result) {
-      App.currentPhase = result;
-      var notificationText = App.auctionPhases[App.currentPhase];
-      console.log(App.currentPhase);
-      console.log(notificationText);
-      $('# -notification-text').text(notificationText);
-      console.log("Phase set");
-    })
-  },
+  
+  getErrorMessage: function (error) {
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    let errorReason = "";
 
-  getChairperson: function() {
-    App.contracts.vote.deployed().then(function(instance) {
-      return instance.beneficiary();
-    }).then(function(result) {
-      App.chairPerson = result;
-      if(App.currentAccount == App.chairPerson) {
-        $(".chairperson").css("display", "inline");
-        $(".img-chairperson").css("width", "100%");
-        $(".img-chairperson").removeClass("col-lg-offset-2");
-      } else {
-        $(".other-user").css("display", "inline");
-      }
-    })
-  },
-
-  handlePhase: function () {
-    App.contracts.vote.deployed().then(function (instance) {
-      return instance.advancePhase({from:App.currentAccount}); // added from parameter
-    })
-      .then(function (result) {
-        console.log(result);
-        if (result) {
-          if (parseInt(result.receipt.status) == 1) {
-            if (result.logs.length > 0) {
-              App.showNotification(result.logs[0].event);
-            }
-            else {
-              App.showNotification("AuctionEnded");
-            }
-            App.contracts.vote.deployed().then(function(latestInstance) {
-              return latestInstance.currentPhase();
-            }).then(function(result) {
-              console.log("This is also working, new phase updated")
-              App.currentPhase = result;
-            })
-            return;
-          }
-          else {
-            toastr["error"]("Error in changing to next Event");
-          }
-        }
-        else {
-          toastr["error"]("Error in changing to next Event");
-        }
-      })
-      .catch(function (err) {
-        toastr["error"]("Error in changing to next Event");
-      });
-  },
-
-  handleBid: function () {
-    event.preventDefault();
-    var bidValue = $("#bet-value").val();
-    var msgValue = $("#message-value").val();
-    // removed getting account part as we already have App.currentAccount
-
-      App.contracts.vote.deployed().then(function (instance) {
-        bidInstance = instance;
-
-        return bidInstance.bid(bidValue, { value: web3.toWei(msgValue, "ether"), from: App.currentAccount }); // added from parameter
-      }).then(function (result, err) {
-        if (result) {
-          console.log(result.receipt.status);
-          if (parseInt(result.receipt.status) == 1)
-            toastr.info("Your Bid is Placed!", "", { "iconClass": 'toast-info notification0' });
-          else
-            toastr["error"]("Error in Bidding. Bidding Reverted!");
-        } else {
-          toastr["error"]("Bidding Failed!");
-        }
-      }).catch(function (err) {
-        toastr["error"]("Bidding Failed!");
-      });
-  },
-
-  handleReveal: function () {
-    console.log("button clicked");
-    event.preventDefault();
-    var bidRevealValue = $("#bet-reveal").val();
-    console.log(parseInt(bidRevealValue));
-    var bidRevealSecret = $("#password").val();
-    // removed getting account part as we already have App.currentAccount
-
-      App.contracts.vote.deployed().then(function (instance) {
-        bidInstance = instance;
-
-        return bidInstance.reveal(parseInt(bidRevealValue), bidRevealSecret, {from : App.currentAccount}); // added from parameter
-      }).then(function (result, err) {
-        if (result) {
-          console.log(result.receipt.status);
-          if (parseInt(result.receipt.status) == 1)
-            toastr.info("Your Bid is Revealed!", "", { "iconClass": 'toast-info notification0' });
-          else
-            toastr["error"]("Error in Revealing. Bidding Reverted!");
-        } else {
-          toastr["error"]("Revealing Failed!");
-        }
-      }).catch(function (err) {
-        toastr["error"]("Revealing Failed!");
-      });
-  },
-
-
-  handleWinner: function () {
-    console.log("To get winner");
-    var bidInstance;
-    App.contracts.vote.deployed().then(function (instance) {
-      bidInstance = instance;
-      return bidInstance.auctionEnd({from:App.currentAccount});  // added from parameter
-    }).then(function (res) {
-      console.log(res);
-      var winner = res.logs[0].args.winner;
-      var highestBid = res.logs[0].args.highestBid.toNumber();
-      toastr.info("Highest bid is " + highestBid + "<br>" + "Winner is " + winner, "", { "iconClass": 'toast-info notification3' });
-    }).catch(function (err) {
-      console.log(err.message);
-      toastr["error"]("Error!");
-    })
-  },
-
-  handleWithdraw: function() {
-    if(App.currentPhase == 3) {
-      console.log("Inside handleWithdraw")
-      App.contracts.vote.deployed().then(function(instance) {
-        console.log("Trying to call withdraw with currentAccount: " + App.currentAccount);
-        return instance.withdraw({from: App.currentAccount });
-      }).then(function(result, error) {
-        if(result.receipt.status) {
-          toastr.info('Your bid has been withdrawn');
-        }  
-      }).catch(function(error) {
-        console.log(err.message);
-        toastr["error"]("Error in withdrawing the bid");
-      })
+    if (errorCode === 4001) {
+      return "User rejected the request!";
+    } else if (
+      errorMessage.includes("Access Denied: user is not the contract deployer!")
+    ) {
+      return "Access Denied: The address calling this function is not the deployer!";
+    } else if (
+      errorMessage.includes(
+        "Access Denied: counterPhase is not at Initialized!"
+      )
+    ) {
+      return "Access Denied: Counter has not been initialized!";
     } else {
-      toastr["error"]("Not in a valid phase to withdraw bid!");
+      return "Unexpected Error!";
     }
   },
 
-  handleClose: function() {
-    if(App.currentPhase == 3) {
-      console.log("this worked");
-      App.contracts.vote.deployed().then(function(instance) {
-        return instance.closeAuction({from: App.currentAccount})  // added from parameter
-      }).then(function(result) {
-        if(result.receipt.status) {
-          toastr["error"]("Auction is closed!");
-        }
-      })
-    } else {
-      toastr["error"]("Not in a valid phase to close the auction!");
+  handleGrantAccess: function (warehouseApplicant) {
+
+    if (warehouseApplicant === "") {
+      toastr.erro("Please enter proper EOA address", "Reverted!");
+      return false;
     }
+
+    var option = { from: App.handler };
+    App.contracts.DigitalWarehouseReceipt.methods
+      .grantWarehouseRole(warehouseApplicant)
+      .send(option)
+      .on("receipt", (receipt) => {
+        toastr.success("Successfully added warehouse participant")
+      })
+      .on("error", (err) => {
+        toastr.error(App.getErrorMessage(err), "Reverted!");
+      });
   },
 
-  //Function to show the notification of auction phases
-  showNotification: function (phase) {
-    var notificationText = App.biddingPhases[phase];
-    $('#phase-notification-text').text(notificationText.text);
-    toastr.info(notificationText.text, "", { "iconClass": 'toast-info notification' + String(notificationText.id) });
-  }
+  handleRevokeAccess: function (warehouseParticipant) {
+
+    if (warehouseParticipant === "") {
+      toastr.erro("Please enter proper EOA address", "Reverted!");
+      return false;
+    }
+
+    var option = { from: App.handler };
+    App.contracts.DigitalWarehouseReceipt.methods
+      .revokeWarehouseRole(warehouseParticipant)
+      .send(option)
+      .on("receipt", (receipt) => {
+        toastr.success("Successfully revoked warehouse participant")
+      })
+      .on("error", (err) => {
+        toastr.error(App.getErrorMessage(err), "Reverted!");
+      });
+  },
+
 };
 
 
 $(function () {
   $(window).load(function () {
     App.init();
-    //Notification UI config
-    toastr.options = {
-      "showDuration": "1000",
-      "positionClass": "toast-top-left",
-      "preventDuplicates": true,
-      "closeButton": true
-    };
   });
 });
 
