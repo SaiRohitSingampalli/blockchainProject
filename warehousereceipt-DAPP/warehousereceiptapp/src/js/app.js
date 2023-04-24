@@ -99,44 +99,46 @@ App = {
     
     web3.eth.getAccounts(function(error, accounts) {
       var account = accounts[0];
-    if (warehouseParticipant === "") {
-      toastr.error("Please enter proper EOA address", "Reverted!");
+      if (warehouseParticipant === "") {
+      alert("Please enter proper EOA address", "Reverted!");
       return false;
-    } else if (account === chairPerson) { //check whether moderator
+    } else { 
       App.contracts.receipt.deployed().then(function (instance) {
         moderatorInstance = instance;
-        return moderatorInstance.grantWarehouseRole(warehouseParticipant);
+        return moderatorInstance.grantWarehouseRole(warehouseParticipant,{from: account});
       }).then(function (result, err) {
         if (result) { 
-          toastr.success("Successfully granted warehouse participant")
+          alert("Successfully granted warehouse participant");
         }
       }).catch(function (err) {
+        console.log(err);
         alert("Unable to grant the access");
-        toastr.error(App.getErrorMessage(err), "Reverted!");
       });
     }});
   },
 
   handleRevokeAccess: function () {
     console.log("Here to revoke access");
-    var warehouseParticipant = $("#seller-address-1").val();
+    var warehouseParticipant = $("#seller-address").val();
     
     web3.eth.getAccounts(function(error, accounts) {
       var account = accounts[0];
-    if (warehouseParticipant === "") {
-      toastr.error("Please enter proper EOA address", "Reverted!");
+    web3.eth.getAccounts(function(error, accounts) {
+      var account = accounts[0];
+      if (warehouseParticipant === "") {
+      alert("Please enter proper EOA address", "Reverted!");
       return false;
-    } else if (account === chairPerson) { //check whether moderator
+    } else { 
       App.contracts.receipt.deployed().then(function (instance) {
         moderatorInstance = instance;
-        return moderatorInstance.revokeWarehouseRole(warehouseParticipant);
+        return moderatorInstance.grantWarehouseRole(warehouseParticipant,{from: account});
       }).then(function (result, err) {
         if (result) { 
-          toastr.success("Successfully revoked warehouse participant")
+          alert("Successfully revoked warehouse participant");
         }
       }).catch(function (err) {
+        console.log(err);
         alert("Unable to revoke the access");
-        toastr.error(App.getErrorMessage(err), "Reverted!");
       });
     }});
   },
@@ -145,21 +147,22 @@ App = {
     console.log("Here");
     //event.preventDefault();
 
+    var sellerName = $("#receipt-name").val();
     var sellerAddress = $("#seller-address-2").val();
     var sellerPrice = $("#price").val();
 
     web3.eth.getAccounts(function(error, accounts) {
       var account = accounts[0];
-      App.contracts.vote.deployed().then(function (instance) {
+      App.contracts.receipt.deployed().then(function (instance) {
         bidInstance = instance;
 
         return bidInstance.createWarehouseReceipt(sellerAddress,'http://google.com', sellerPrice, "random", {from: account }); // added from parameter
       }).then(function (result, err) {
         if (result) {
-            toastr.info("Your Bid is Placed!", "", { "iconClass": 'toast-info notification0' });
+            alert("Receipt generated Successfully!");
         }
       }).catch(function (err) {
-        alert("Warehouse Receipt Generation Failed!");
+        alert("Receipt generation failed!");
       });
     });
   },
