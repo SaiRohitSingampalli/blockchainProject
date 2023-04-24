@@ -1,7 +1,10 @@
 var express = require('express');
+var engines = require('consolidate');
 var app = express();
 
-app.set('views', './src/views');
+app.set('views',  __dirname + '/src/views');
+app.engine('html', engines.ejs);
+app.set('view engine', 'html');
 app.use(express.json());
 app.use(express.static('src'));
 app.use(express.static('../warehousereceiptcontract/build/contracts'));
