@@ -31,7 +31,7 @@ App = {
     if (window.location.href.endsWith('/marketplace')){
       var receiptFullList = loadReceiptData;
       var currentUser = App.currentAccount;
-      var data = receiptFullList.filter(obj=> obj.seller != currentUser);
+      var data = receiptFullList.filter(obj=> (obj.seller != currentUser) && (obj.active == true));
 
       var receiptRows = $('#receipt-row');
       var receiptCard = $('#receipt-card');
@@ -50,7 +50,7 @@ App = {
     } else if (window.location.href.endsWith('/myprofile')) {
       var receiptsFullList = loadReceiptData;
       var currentUserProfile = App.currentAccount;
-      var data = receiptsFullList.filter(obj=> obj.seller == currentUserProfile);
+      var data = receiptsFullList.filter(obj=> (obj.seller == currentUserProfile) && (obj.active == true));
       
       var receiptRows = $('#receipt-rows');
       var receiptCard = $('#receipt-card');
