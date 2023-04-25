@@ -3,7 +3,7 @@ const fs = require('fs');
 App = {
   web3Provider: null,
   contracts: {},
-  names: new Array(),
+  receiptArray: new Array(),
   url: 'http://127.0.0.1:7545',
   backendUrl: 'http://localhost:3000',
   // network_id: 5777,
@@ -13,7 +13,41 @@ App = {
 
   init: function () {
     console.log("Checkpoint 0");
-    return App.initWeb3();
+
+    App.initWeb3();
+
+    if (window.location.href.endsWith('/marketplace')){
+      var receiptFullList = loadReceiptData;
+      var currentUser = App.currentAccount;
+      var data = receiptFullList.filter(obj=> obj.seller != currentUser);
+
+      var receiptRows = $('#receiptRows');
+      var receiptCard = $('#receiptCard');
+      
+      for (i = 0; i < data.length; i ++) {
+
+            App.receiptArray.push(data[i].name);
+      }
+        
+    } else if (window.location.href.endsWith('/myprofile')) {
+      var receiptsFullList = loadReceiptData;
+      var currentUserProfile = App.currentAccount;
+      var dataDisplay = receiptsFullList.filter(obj=> obj.seller == currentUserProfile);
+      
+      var receiptRows = $('#receiptRows');
+      var receiptCard = $('#receiptCard');
+
+      for (i = 0; i < data.length; i ++) {
+
+        App.receiptArray.push(data[i].name);
+      }
+
+
+    }
+
+
+
+
   },
 
   loadReceiptData: function () {
@@ -24,10 +58,8 @@ App = {
   },
 
   saveReceiptData: function (updatedReceiptData) {
-
     const updatedReceiptDataJSON = JSON.stringify(updatedReceiptData);
     fs.writeFileSync("../data/receipts.json", updatedReceiptDataJSON);
-
   },
 
   initWeb3: function () {
@@ -368,6 +400,7 @@ App = {
         return sellerInstance.totalActiveCount({from: account});
       }).then(function (result, err) {
         if (result) { 
+          activeCount = result;
           alert(result);
         }
       }).catch(function (err) {
