@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 App = {
   web3Provider: null,
   contracts: {},
@@ -7,10 +9,25 @@ App = {
   // network_id: 5777,
   moderator: null,
   currentAccount: null,
+  activeCount: 0,
 
   init: function () {
     console.log("Checkpoint 0");
     return App.initWeb3();
+  },
+
+  loadReceiptData: function () {
+    receiptDataBuffer = fs.readFileSync("../data/receipts.json");
+    receiptDataBufferJSON = receiptDataBuffer.toString();
+    receipts = JSON.parse(receiptDataBufferJSON);
+    return receipts
+  },
+
+  saveReceiptData: function (updatedReceiptData) {
+
+    const updatedReceiptDataJSON = JSON.stringify(updatedReceiptData);
+    fs.writeFileSync("../data/receipts.json", updatedReceiptDataJSON);
+
   },
 
   initWeb3: function () {
@@ -161,10 +178,10 @@ App = {
   handleCreateWarehouseReceipt: function () {
     console.log("Here Creating Warehouse Receipt");
     //event.preventDefault();
-
+    //const receiptsData = loadReceiptData();
     var sellerAddress = $("#seller-address").val();
     var sellerPrice = $("#price").val();
-    var assetURI = "http://google.com";
+    var assetURI = "Not available";
     var receiptName = "ReceiptName";
 
     web3.eth.getAccounts(function(error, accounts) {
@@ -175,7 +192,22 @@ App = {
         return moderatorInstance.createWarehouseReceipt( sellerAddress, assetURI, sellerPrice, receiptName, {from: account }); // added from parameter
       }).then(function (result, err) {
         if (result) {
-          alert("Your Bid is Placed!", "", { "iconClass": 'toast-info notification0' });
+          const receiptsData = loadReceiptData();
+          receiptsData.push({
+            name: receiptName,
+            active: false,
+            price: sellerPrice,
+            seller: sellerAddress,
+            warehouse: account,
+            burnit: false,
+            tokenId: result,
+            highestBid: 0,
+            highestBidder: "",
+            destroyed: false
+          })
+          saveReceiptData(receiptsData)
+
+          alert("Warehouse Receipt is created");
         }
       }).catch(function (err) {
         alert("Warehouse Receipt Generation Failed!");
@@ -198,6 +230,11 @@ App = {
             return moderatorInstance.destroyToken(tokenId, {from: account});
           }).then(function (result, err) {
           if (result) { 
+            const receiptsData = loadReceiptData();
+            receiptsData[tokenId-1].burnit = true;
+            receiptsData[tokenId-1].active = false;
+            receiptsData[tokenId-1].destroyed = true;
+            saveReceiptData(receiptsData);
             alert("Successfully destroyed the receipt")
           }}).catch(function (err) {
             alert("Unable to destroy the receipt");
@@ -222,6 +259,9 @@ App = {
           return sellerInstance.activateReceipt(tokenId, {from: account});
         }).then(function (result, err) {
           if (result) { 
+            const receiptsData = loadReceiptData();
+            receiptsData[tokenId-1].active = true;
+            saveReceiptData(receiptsData);
             alert("Successfully activated the receipt");
           }
         }).catch(function (err) {
@@ -247,6 +287,9 @@ App = {
           return sellerInstance.deactivateReceipt(tokenId,{from: account});
         }).then(function (result, err) {
           if (result) { 
+            const receiptsData = loadReceiptData();
+            receiptsData[tokenId-1].active = false;
+            saveReceiptData(receiptsData);
             alert("Successfully deactivated the receipt");
           }
         }).catch(function (err) {
@@ -273,6 +316,9 @@ App = {
           return sellerInstance.setPrice(tokenId, price, {from: account});
         }).then(function (result, err) {
           if (result) { 
+            const receiptsData = loadReceiptData();
+            receiptsData[tokenId-1].price = price;
+            saveReceiptData(receiptsData);
             alert("Successfully setprice for the receipt")
           }
         }).catch(function (err) {
@@ -298,6 +344,9 @@ App = {
           return sellerInstance.setPrice(tokenId, {from: account});
         }).then(function (result, err) {
           if (result) { 
+            const receiptsData = loadReceiptData();
+            receiptsData[tokenId-1].burnit = true;
+            saveReceiptData(receiptsData);
             alert("Successfully allow the receipt burn");
           }
         }).catch(function (err) {
@@ -319,7 +368,7 @@ App = {
         return sellerInstance.totalActiveCount({from: account});
       }).then(function (result, err) {
         if (result) { 
-          alert("success");
+          alert(result);
         }
       }).catch(function (err) {
         alert("error in fetching active count of receipts");
@@ -339,7 +388,11 @@ App = {
         buyerInstance = instance;
         return buyerInstance.bidForReceipt(tokenId, bid, {from: account});
       }).then(function (result, err) {
-        if (result) { 
+        if (result) {
+          const receiptsData = loadReceiptData();
+          receiptsData[tokenId-1].highestBid = bid;
+          receiptsData[tokenId-1].highestBidder = account;
+          saveReceiptData(receiptsData); 
           alert("successfully placed bid");
         }
       }).catch(function (err) {
@@ -361,6 +414,10 @@ App = {
         return buyerInstance.buyReceipt(tokenId,{from: account});
       }).then(function (result, err) {
         if (result) { 
+          const receiptsData = loadReceiptData();
+          receiptsData[tokenId-1].active = false;
+          receiptsData[tokenId-1].seller = account;
+          saveReceiptData(receiptsData);
           alert("successfully bought the receipt");
         }
       }).catch(function (err) {
