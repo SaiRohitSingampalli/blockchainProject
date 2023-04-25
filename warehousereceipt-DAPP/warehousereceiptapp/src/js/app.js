@@ -21,33 +21,39 @@ App = {
       var currentUser = App.currentAccount;
       var data = receiptFullList.filter(obj=> obj.seller != currentUser);
 
-      var receiptRows = $('#receiptRows');
-      var receiptCard = $('#receiptCard');
+      var receiptRows = $('#receipt-row');
+      var receiptCard = $('#receipt-card');
       
       for (i = 0; i < data.length; i ++) {
-
-            App.receiptArray.push(data[i].name);
+        receiptCard.find('.receipt-title').text(data[i].name);
+        receiptCard.find('.receipt-price').text(data[i].price);
+        receiptCard.find('.receipt-seller').text(data[i].seller);
+        receiptCard.find('.receipt-warehouse').text(data[i].warehouse);
+        receiptCard.find('.receipt-tokenid').text(data[i].tokenId);
+        receiptCard.find('.receipt-highestbid').text(data[i].highestBid);
+        receiptRows.append(receiptCard.html());
+        App.receiptArray.push(data[i].name);
       }
         
     } else if (window.location.href.endsWith('/myprofile')) {
       var receiptsFullList = loadReceiptData;
       var currentUserProfile = App.currentAccount;
-      var dataDisplay = receiptsFullList.filter(obj=> obj.seller == currentUserProfile);
+      var data = receiptsFullList.filter(obj=> obj.seller == currentUserProfile);
       
-      var receiptRows = $('#receiptRows');
-      var receiptCard = $('#receiptCard');
+      var receiptRows = $('#receipt-rows');
+      var receiptCard = $('#receipt-card');
 
       for (i = 0; i < data.length; i ++) {
-
+        receiptCard.find('.receipt-title').text(data[i].name);
+        receiptCard.find('.receipt-price').text(data[i].price);
+        receiptCard.find('.receipt-seller').text(data[i].seller);
+        receiptCard.find('.receipt-warehouse').text(data[i].warehouse);
+        receiptCard.find('.receipt-tokenid').text(data[i].tokenId);
+        receiptCard.find('.receipt-highestbid').text(data[i].highestBid);
+        receiptRows.append(receiptCard.html());
         App.receiptArray.push(data[i].name);
       }
-
-
     }
-
-
-
-
   },
 
   loadReceiptData: function () {
