@@ -5,7 +5,7 @@ App = {
   url: 'http://127.0.0.1:7545',
   backendUrl: 'http://localhost:3000',
   // network_id: 5777,
-  chairPerson: null,
+  moderator: null,
   currentAccount: null,
 
   init: function () {
@@ -37,7 +37,8 @@ App = {
       App.contracts.receipt.setProvider(App.web3Provider);
       App.currentAccount = web3.eth.coinbase;
       jQuery('#current_account').text(App.currentAccount);
-      chairPerson = App.currentAccount; //update chairperson as soon as initialized
+      //App.currentAccount; //update chairperson as soon as initialized
+      //App.getModerator;
       return App.bindEvents();
     });
   },
@@ -70,7 +71,21 @@ App = {
     });
   },
 
-  
+  getModerator: function() {
+    App.contracts.receipt.deployed().then(function(instance) {
+      return instance.beneficiary();
+    }).then(function(result) {
+      App.moderator = result;
+      if(App.currentAccount == App.moderator) {
+        $(".chairperson").css("display", "inline");
+        $(".img-chairperson").css("width", "100%");
+        $(".img-chairperson").removeClass("col-lg-offset-2");
+      } else {
+        $(".other-user").css("display", "inline");
+      }
+    })
+  },
+
   getErrorMessage: function (error) {
     const errorCode = error.code;
     const errorMessage = error.message;
@@ -81,15 +96,15 @@ App = {
     } else if (
       errorMessage.includes("Access Denied: user is not the contract deployer!")
     ) {
-      return "Access Denied: The address calling this function is not the deployer!";
+        return "Access Denied: The address calling this function is not the deployer!";
     } else if (
-      errorMessage.includes(
-        "Access Denied: counterPhase is not at Initialized!"
-      )
-    ) {
+        errorMessage.includes(
+          "Access Denied: counterPhase is not at Initialized!"
+        )
+      ) {
       return "Access Denied: Counter has not been initialized!";
     } else {
-      return "Unexpected Error!";
+        return "Unexpected Error!";
     }
   },
 
@@ -100,21 +115,22 @@ App = {
     web3.eth.getAccounts(function(error, accounts) {
       var account = accounts[0];
       if (warehouseParticipant === "") {
-      alert("Please enter proper EOA address", "Reverted!");
-      return false;
+        alert("Please enter proper EOA address", "Reverted!");
+        return false;
     } else { 
-      App.contracts.receipt.deployed().then(function (instance) {
-        moderatorInstance = instance;
-        return moderatorInstance.grantWarehouseRole(warehouseParticipant,{from: account});
-      }).then(function (result, err) {
-        if (result) { 
-          alert("Successfully granted warehouse participant");
-        }
-      }).catch(function (err) {
-        console.log(err);
-        alert("Unable to grant the access");
-      });
-    }});
+        App.contracts.receipt.deployed().then(function (instance) {
+          moderatorInstance = instance;
+          return moderatorInstance.grantWarehouseRole(warehouseParticipant,{from: account});
+        }).then(function (result, err) {
+          if (result) { 
+            alert("Successfully granted warehouse participant")
+          }
+        }).catch(function (err) {
+          console.log(err);
+          alert("Unable to grant the access");
+          //toastr.error(App.getErrorMessage(err), "Reverted!");
+        });
+      }});
   },
 
   handleRevokeAccess: function () {
@@ -123,46 +139,46 @@ App = {
     
     web3.eth.getAccounts(function(error, accounts) {
       var account = accounts[0];
-    web3.eth.getAccounts(function(error, accounts) {
-      var account = accounts[0];
       if (warehouseParticipant === "") {
-      alert("Please enter proper EOA address", "Reverted!");
-      return false;
-    } else { 
-      App.contracts.receipt.deployed().then(function (instance) {
-        moderatorInstance = instance;
-        return moderatorInstance.grantWarehouseRole(warehouseParticipant,{from: account});
-      }).then(function (result, err) {
-        if (result) { 
-          alert("Successfully revoked warehouse participant");
-        }
-      }).catch(function (err) {
-        console.log(err);
-        alert("Unable to revoke the access");
-      });
-    }});
+        alert("Please enter proper EOA address", "Reverted!");
+        return false;
+      } else { 
+          App.contracts.receipt.deployed().then(function (instance) {
+            moderatorInstance = instance;
+            return moderatorInstance.revokeWarehouseRole(warehouseParticipant,{from: account});
+          }).then(function (result, err) {
+            if (result) { 
+              alert("Successfully revoked warehouse participant")
+            }
+          }).catch(function (err) {
+              alert("Unable to revoke the access");
+        //toastr.error(App.getErrorMessage(err), "Reverted!");
+          });
+      }
+    });
   },
 
   handleCreateWarehouseReceipt: function () {
-    console.log("Here");
+    console.log("Here Creating Warehouse Receipt");
     //event.preventDefault();
 
-    var sellerName = $("#receipt-name").val();
-    var sellerAddress = $("#seller-address-2").val();
+    var sellerAddress = $("#seller-address").val();
     var sellerPrice = $("#price").val();
+    var assetURI = "http://google.com";
+    var receiptName = "ReceiptName";
 
     web3.eth.getAccounts(function(error, accounts) {
       var account = accounts[0];
       App.contracts.receipt.deployed().then(function (instance) {
-        bidInstance = instance;
+        moderatorInstance = instance;
 
-        return bidInstance.createWarehouseReceipt(sellerAddress,'http://google.com', sellerPrice, "random", {from: account }); // added from parameter
+        return moderatorInstance.createWarehouseReceipt( sellerAddress, assetURI, sellerPrice, receiptName, {from: account }); // added from parameter
       }).then(function (result, err) {
         if (result) {
-            alert("Receipt generated Successfully!");
+          alert("Your Bid is Placed!", "", { "iconClass": 'toast-info notification0' });
         }
       }).catch(function (err) {
-        alert("Receipt generation failed!");
+        alert("Warehouse Receipt Generation Failed!");
       });
     });
   },
@@ -173,22 +189,22 @@ App = {
     
     web3.eth.getAccounts(function(error, accounts) {
       var account = accounts[0];
-    if (warehouseParticipant === "") {
-      toastr.error("Please enter tokenID", "Reverted!");
-      return false;
-    } else if (account === chairPerson) { //check whether moderator
-      App.contracts.receipt.deployed().then(function (instance) {
-        moderatorInstance = instance;
-        return moderatorInstance.destroyToken(tokenId);
-      }).then(function (result, err) {
-        if (result) { 
-          toastr.success("Successfully destroyed the receipt")
-        }
-      }).catch(function (err) {
-        alert("Unable to destroy the receipt");
-        toastr.error(App.getErrorMessage(err), "Reverted!");
-      });
-    }});
+      if (warehouseParticipant === "") {
+        alert("Please enter tokenID", "Reverted!");
+        return false;
+      } else { //check whether moderator
+          App.contracts.receipt.deployed().then(function (instance) {
+            moderatorInstance = instance;
+            return moderatorInstance.destroyToken(tokenId, {from: account});
+          }).then(function (result, err) {
+          if (result) { 
+            alert("Successfully destroyed the receipt")
+          }}).catch(function (err) {
+            alert("Unable to destroy the receipt");
+            //toastr.error(App.getErrorMessage(err), "Reverted!");
+          });
+      }
+    });
   },
 
   handleActivateWarehouseReceipt: function () {
@@ -197,22 +213,23 @@ App = {
     
     web3.eth.getAccounts(function(error, accounts) {
       var account = accounts[0];
-    if (warehouseParticipant === "") {
-      toastr.error("Please enter tokenID", "Reverted!");
-      return false;
-    } else { 
-      App.contracts.receipt.deployed().then(function (instance) {
-        sellerInstance = instance;
-        return sellerInstance.activateReceipt(tokenId);
-      }).then(function (result, err) {
-        if (result) { 
-          toastr.success("Successfully activated the receipt")
-        }
-      }).catch(function (err) {
-        alert("Unable to activate the receipt");
-        toastr.error(App.getErrorMessage(err), "Reverted!");
-      });
-    }});
+      if (warehouseParticipant === "") {
+        alert("Please enter tokenID", "Reverted!");
+        return false;
+      } else { 
+        App.contracts.receipt.deployed().then(function (instance) {
+          sellerInstance = instance;
+          return sellerInstance.activateReceipt(tokenId, {from: account});
+        }).then(function (result, err) {
+          if (result) { 
+            alert("Successfully activated the receipt");
+          }
+        }).catch(function (err) {
+          alert("Unable to activate the receipt");
+        //toastr.error(App.getErrorMessage(err), "Reverted!");
+        });
+      }
+    });
   },
 
   handleDeactivateWarehouseReceipt: function () {
@@ -221,22 +238,23 @@ App = {
     
     web3.eth.getAccounts(function(error, accounts) {
       var account = accounts[0];
-    if (warehouseParticipant === "") {
-      toastr.error("Please enter tokenID", "Reverted!");
-      return false;
-    } else { 
-      App.contracts.receipt.deployed().then(function (instance) {
-        sellerInstance = instance;
-        return sellerInstance.deactivateReceipt(tokenId);
-      }).then(function (result, err) {
-        if (result) { 
-          toastr.success("Successfully deactivated the receipt")
-        }
-      }).catch(function (err) {
-        alert("Unable to deactivate the receipt");
-        toastr.error(App.getErrorMessage(err), "Reverted!");
-      });
-    }});
+      if (warehouseParticipant === "") {
+        alert("Please enter tokenID", "Reverted!");
+        return false;
+      } else { 
+        App.contracts.receipt.deployed().then(function (instance) {
+          sellerInstance = instance;
+          return sellerInstance.deactivateReceipt(tokenId,{from: account});
+        }).then(function (result, err) {
+          if (result) { 
+            alert("Successfully deactivated the receipt");
+          }
+        }).catch(function (err) {
+          alert("Unable to deactivate the receipt");
+       //     toastr.error(App.getErrorMessage(err), "Reverted!");
+        });
+      }
+    });
   },
 
   handleSetprice: function () {
@@ -246,22 +264,23 @@ App = {
     
     web3.eth.getAccounts(function(error, accounts) {
       var account = accounts[0];
-    if (tokenId === "" || !(price > 0)) {
-      toastr.error("Please enter valid tokenID and price", "Reverted!");
-      return false;
-    } else { 
-      App.contracts.receipt.deployed().then(function (instance) {
-        sellerInstance = instance;
-        return sellerInstance.setPrice(tokenId, price);
-      }).then(function (result, err) {
-        if (result) { 
-          toastr.success("Successfully setprice for the receipt")
-        }
-      }).catch(function (err) {
-        alert("Unable to setprice for the receipt");
-        toastr.error(App.getErrorMessage(err), "Reverted!");
-      });
-    }});
+      if (tokenId === "" || !(price > 0)) {
+        alert("Please enter valid tokenID and price", "Reverted!");
+        return false;
+      } else { 
+        App.contracts.receipt.deployed().then(function (instance) {
+          sellerInstance = instance;
+          return sellerInstance.setPrice(tokenId, price, {from: account});
+        }).then(function (result, err) {
+          if (result) { 
+            alert("Successfully setprice for the receipt")
+          }
+        }).catch(function (err) {
+          alert("Unable to setprice for the receipt");
+          //toastr.error(App.getErrorMessage(err), "Reverted!");
+        });
+      }
+    });
   },
 
   handleAllowDestroy: function () {
@@ -270,22 +289,23 @@ App = {
     
     web3.eth.getAccounts(function(error, accounts) {
       var account = accounts[0];
-    if (tokenId === "") {
-      toastr.error("Please enter valid tokenID", "Reverted!");
-      return false;
-    } else { 
-      App.contracts.receipt.deployed().then(function (instance) {
-        sellerInstance = instance;
-        return sellerInstance.setPrice(tokenId);
-      }).then(function (result, err) {
-        if (result) { 
-          toastr.success("Successfully allow the receipt burn")
-        }
-      }).catch(function (err) {
-        alert("Unable to allow the receipt burn");
-        toastr.error(App.getErrorMessage(err), "Reverted!");
-      });
-    }});
+      if (tokenId === "") {
+        alert("Please enter valid tokenID", "Reverted!");
+        return false;
+      } else { 
+        App.contracts.receipt.deployed().then(function (instance) {
+          sellerInstance = instance;
+          return sellerInstance.setPrice(tokenId, {from: account});
+        }).then(function (result, err) {
+          if (result) { 
+            alert("Successfully allow the receipt burn");
+          }
+        }).catch(function (err) {
+          alert("Unable to allow the receipt burn");
+        //toastr.error(App.getErrorMessage(err), "Reverted!");
+        });
+      }
+    });
   },
 
   handleTotalActiveCount: function () {
@@ -296,14 +316,14 @@ App = {
  
       App.contracts.receipt.deployed().then(function (instance) {
         sellerInstance = instance;
-        return sellerInstance.totalActiveCount();
+        return sellerInstance.totalActiveCount({from: account});
       }).then(function (result, err) {
         if (result) { 
-          toastr.success("success")
+          alert("success");
         }
       }).catch(function (err) {
         alert("error in fetching active count of receipts");
-        toastr.error(App.getErrorMessage(err), "Reverted!");
+        //toastr.error(App.getErrorMessage(err), "Reverted!");
       });
     });
   },
@@ -317,14 +337,14 @@ App = {
  
       App.contracts.receipt.deployed().then(function (instance) {
         buyerInstance = instance;
-        return buyerInstance.bidForReceipt(tokenId, bid);
+        return buyerInstance.bidForReceipt(tokenId, bid, {from: account});
       }).then(function (result, err) {
         if (result) { 
-          toastr.success("successfully placed bid")
+          alert("successfully placed bid");
         }
       }).catch(function (err) {
         alert("error in submitting bids");
-        toastr.error(App.getErrorMessage(err), "Reverted!");
+        //toastr.error(App.getErrorMessage(err), "Reverted!");
       });
     });
   },
@@ -338,19 +358,17 @@ App = {
  
       App.contracts.receipt.deployed().then(function (instance) {
         buyerInstance = instance;
-        return buyerInstance.buyReceipt(tokenId);
+        return buyerInstance.buyReceipt(tokenId,{from: account});
       }).then(function (result, err) {
         if (result) { 
-          toastr.success("successfully bought the receipt")
+          alert("successfully bought the receipt");
         }
       }).catch(function (err) {
         alert("transaction was not successful");
-        toastr.error(App.getErrorMessage(err), "Reverted!");
+        //toastr.error(App.getErrorMessage(err), "Reverted!");
       });
     });
   },
-  
-
 };
 
 
