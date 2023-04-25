@@ -54,11 +54,13 @@ contract DigitalWarehouseReceipt is ERC721, ERC721URIStorage, AccessControl, Own
     //Granting warehouse role to a user by only moderator
     function grantWarehouseRole(address to) public onlyRole(MODERATOR){
         _grantRole(WAREHOUSE, to);
+        return true;
     }
 
     //Revoking warehouse role to the user by only moderator
     function revokeWarehouseRole(address to) public onlyRole(MODERATOR) { 
         _revokeRole(WAREHOUSE, to);
+        return true;
     }
 
     //Creating warehouse receipts by authorized warehouse user only
@@ -78,6 +80,7 @@ contract DigitalWarehouseReceipt is ERC721, ERC721URIStorage, AccessControl, Own
         HighestBid[tokenId] = 0;
         activeCount += 1;
         _tokenIdCounter.increment();
+        return tokenId;
     }
 
    //Buyer can bid the product for lower price than offered by seller, so that the seller can know and decrease the price of the product.
@@ -86,7 +89,8 @@ contract DigitalWarehouseReceipt is ERC721, ERC721URIStorage, AccessControl, Own
          require(WarehouseReceipts[tokenId].seller != msg.sender, "Seller of the token can't place bid"); //seller can't place bid
         if ( bidder.balance <= bid || HighestBid[tokenId] > bid) { revert(); } //checking whether bidder has sufficient balance
         HighestBid[tokenId] = bid;  //highest bid will be updated
-        HighestBidder[tokenId] = bidder; //highest bidder address is updated     
+        HighestBidder[tokenId] = bidder; //highest bidder address is updated 
+        return true;    
     }
 
     //Seller can activate the receipts as per requirement to enable trading
@@ -95,6 +99,7 @@ contract DigitalWarehouseReceipt is ERC721, ERC721URIStorage, AccessControl, Own
         require(WarehouseReceipts[tokenId].seller == msg.sender, "Owner/Seller of the token receipt can change the status");
         WarehouseReceipts[tokenId].active = true;
         activeCount += 1;
+        return true;
     }
 
     //A buyer can buy the receipt for the price offered by the seller and transaction happens along with the trasfer of the receipt ownership
@@ -109,6 +114,7 @@ contract DigitalWarehouseReceipt is ERC721, ERC721URIStorage, AccessControl, Own
         WarehouseReceipts[tokenId].seller = msg.sender;
         payable(tokenOwner).transfer(msg.value);
         activeCount -= 1;
+        return true;
     }
     
     //A seller can Deactivate the receipts to pause the trade
@@ -117,16 +123,19 @@ contract DigitalWarehouseReceipt is ERC721, ERC721URIStorage, AccessControl, Own
         require(WarehouseReceipts[tokenId].seller == msg.sender, "Owner/Seller of the token receipt can change the status");
         WarehouseReceipts[tokenId].active = false;
         activeCount -= 1;
+        return true;
     }
 
     //A seller can change the price he is willing to sell
     function setPrice(uint tokenId, uint256 price) public onlySeller(tokenId){
         WarehouseReceipts[tokenId].price = price;
+        return price;
     }
 
     //Once the product is delivered, the seller will allow the warehouse owner to destroy the token.
     function allowTokenDestroy(uint tokenId) public onlySeller(tokenId) {
         WarehouseReceipts[tokenId].burnit = true;
+        return true;
     }
 
     //After getting destroy approval from seller, warehouse owner destroys the token
@@ -136,6 +145,7 @@ contract DigitalWarehouseReceipt is ERC721, ERC721URIStorage, AccessControl, Own
         }
         require(msg.sender == WarehouseReceipts[tokenId].warehouse);
         _burn(tokenId);
+        return true;
     }
     
     //Give the total number of active tokens in the system
