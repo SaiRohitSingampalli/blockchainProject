@@ -11,6 +11,18 @@ App = {
   currentAccount: null,
   activeCount: 0,
 
+  loadReceiptData: function () {
+    receiptDataBuffer = fs.readFileSync("../data/receipts.json");
+    receiptDataBufferJSON = receiptDataBuffer.toString();
+    receipts = JSON.parse(receiptDataBufferJSON);
+    return receipts
+  },
+
+  saveReceiptData: function (updatedReceiptData) {
+    const updatedReceiptDataJSON = JSON.stringify(updatedReceiptData);
+    fs.writeFileSync("../data/receipts.json", updatedReceiptDataJSON);
+  },
+
   init: function () {
     console.log("Checkpoint 0");
 
@@ -54,18 +66,6 @@ App = {
         App.receiptArray.push(data[i].name);
       }
     }
-  },
-
-  loadReceiptData: function () {
-    receiptDataBuffer = fs.readFileSync("../data/receipts.json");
-    receiptDataBufferJSON = receiptDataBuffer.toString();
-    receipts = JSON.parse(receiptDataBufferJSON);
-    return receipts
-  },
-
-  saveReceiptData: function (updatedReceiptData) {
-    const updatedReceiptDataJSON = JSON.stringify(updatedReceiptData);
-    fs.writeFileSync("../data/receipts.json", updatedReceiptDataJSON);
   },
 
   initWeb3: function () {
