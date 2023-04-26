@@ -29,7 +29,7 @@ App = {
     App.initWeb3();
 
     if (window.location.href.endsWith('/marketplace')){
-      var receiptFullList = loadReceiptData;
+      var receiptFullList = App.loadReceiptData();
       var currentUser = App.currentAccount;
       var data = receiptFullList.filter(obj=> (obj.seller != currentUser) && (obj.active == true));
 
@@ -48,7 +48,7 @@ App = {
       }
         
     } else if (window.location.href.endsWith('/myprofile')) {
-      var receiptsFullList = loadReceiptData;
+      var receiptsFullList = App.loadReceiptData();
       var currentUserProfile = App.currentAccount;
       var data = receiptsFullList.filter(obj=> (obj.seller == currentUserProfile) && (obj.active == true));
       
@@ -216,7 +216,7 @@ App = {
   handleCreateWarehouseReceipt: function () {
     console.log("Here Creating Warehouse Receipt");
     //event.preventDefault();
-    //const receiptsData = loadReceiptData();
+    //const receiptsData = App.loadReceiptData();
     var sellerAddress = $("#seller-address").val();
     var sellerPrice = $("#price").val();
     var assetURI = "Not available";
@@ -230,7 +230,7 @@ App = {
         return moderatorInstance.createWarehouseReceipt( sellerAddress, assetURI, sellerPrice, receiptName, {from: account }); // added from parameter
       }).then(function (result, err) {
         if (result) {
-          const receiptsData = loadReceiptData();
+          const receiptsData = App.loadReceiptData();
           receiptsData.push({
             name: receiptName,
             active: false,
@@ -243,7 +243,7 @@ App = {
             highestBidder: "",
             destroyed: false
           })
-          saveReceiptData(receiptsData)
+          App.saveReceiptData(receiptsData);
 
           alert("Warehouse Receipt is created");
         }
@@ -268,12 +268,12 @@ App = {
             return moderatorInstance.destroyToken(tokenId, {from: account});
           }).then(function (result, err) {
           if (result) { 
-            const receiptsData = loadReceiptData();
+            const receiptsData = App.loadReceiptData();
             receiptsData[tokenId-1].burnit = true;
             receiptsData[tokenId-1].active = false;
             receiptsData[tokenId-1].destroyed = true;
-            saveReceiptData(receiptsData);
-            alert("Successfully destroyed the receipt")
+            App.saveReceiptData(receiptsData);
+            alert("Successfully destroyed the receipt");
           }}).catch(function (err) {
             alert("Unable to destroy the receipt");
             //toastr.error(App.getErrorMessage(err), "Reverted!");
@@ -297,9 +297,9 @@ App = {
           return sellerInstance.activateReceipt(tokenId, {from: account});
         }).then(function (result, err) {
           if (result) { 
-            const receiptsData = loadReceiptData();
+            const receiptsData = App.loadReceiptData();
             receiptsData[tokenId-1].active = true;
-            saveReceiptData(receiptsData);
+            App.saveReceiptData(receiptsData);
             alert("Successfully activated the receipt");
           }
         }).catch(function (err) {
@@ -325,9 +325,9 @@ App = {
           return sellerInstance.deactivateReceipt(tokenId,{from: account});
         }).then(function (result, err) {
           if (result) { 
-            const receiptsData = loadReceiptData();
+            const receiptsData = App.loadReceiptData();
             receiptsData[tokenId-1].active = false;
-            saveReceiptData(receiptsData);
+            App.saveReceiptData(receiptsData);
             alert("Successfully deactivated the receipt");
           }
         }).catch(function (err) {
@@ -354,10 +354,10 @@ App = {
           return sellerInstance.setPrice(tokenId, price, {from: account});
         }).then(function (result, err) {
           if (result) { 
-            const receiptsData = loadReceiptData();
+            const receiptsData = App.loadReceiptData();
             receiptsData[tokenId-1].price = price;
-            saveReceiptData(receiptsData);
-            alert("Successfully setprice for the receipt")
+            App.saveReceiptData(receiptsData);
+            alert("Successfully setprice for the receipt");
           }
         }).catch(function (err) {
           alert("Unable to setprice for the receipt");
@@ -382,9 +382,9 @@ App = {
           return sellerInstance.setPrice(tokenId, {from: account});
         }).then(function (result, err) {
           if (result) { 
-            const receiptsData = loadReceiptData();
+            const receiptsData = App.loadReceiptData();
             receiptsData[tokenId-1].burnit = true;
-            saveReceiptData(receiptsData);
+            App.saveReceiptData(receiptsData);
             alert("Successfully allow the receipt burn");
           }
         }).catch(function (err) {
@@ -428,10 +428,10 @@ App = {
         return buyerInstance.bidForReceipt(tokenId, bid, {from: account});
       }).then(function (result, err) {
         if (result) {
-          const receiptsData = loadReceiptData();
+          const receiptsData = App.loadReceiptData();
           receiptsData[tokenId-1].highestBid = bid;
           receiptsData[tokenId-1].highestBidder = account;
-          saveReceiptData(receiptsData); 
+          App.saveReceiptData(receiptsData); 
           alert("successfully placed bid");
         }
       }).catch(function (err) {
@@ -453,10 +453,10 @@ App = {
         return buyerInstance.buyReceipt(tokenId,{from: account});
       }).then(function (result, err) {
         if (result) { 
-          const receiptsData = loadReceiptData();
+          const receiptsData = App.loadReceiptData();
           receiptsData[tokenId-1].active = false;
           receiptsData[tokenId-1].seller = account;
-          saveReceiptData(receiptsData);
+          App.saveReceiptData(receiptsData);
           alert("successfully bought the receipt");
         }
       }).catch(function (err) {
