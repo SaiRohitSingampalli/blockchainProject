@@ -1,6 +1,5 @@
-const fs = require('fs');
-
 App = {
+
   web3Provider: null,
   contracts: {},
   receiptArray: new Array(),
@@ -11,60 +10,74 @@ App = {
   currentAccount: null,
   activeCount: 0,
 
-  loadReceiptData: function () {
-    receiptDataBuffer = fs.readFileSync("../data/receipts.json");
-    receiptDataBufferJSON = receiptDataBuffer.toString();
-    receipts = JSON.parse(receiptDataBufferJSON);
-    return receipts
+  loadJSON: function () {
+
+    fetch(`${App.backendUrl}/load`)
+      .then(resp=> resp.json())
+      .then(receiptFullList => {
+        console.log(receiptFullList);
+        return receiptFullList;
+      })
   },
 
-  saveReceiptData: function (updatedReceiptData) {
-    const updatedReceiptDataJSON = JSON.stringify(updatedReceiptData);
-    fs.writeFileSync("../data/receipts.json", updatedReceiptDataJSON);
+  updateJSON: function (updatedDetails) {
+
+    fetch(`${App.backendUrl}/update`,{
+      method: "POST",
+      headers:{'Content-Type': 'application/json'},
+      body: JSON.stringify(updatedDetails)
+    })
+    return true;
   },
 
   init: function () {
+
     console.log("Checkpoint 0");
 
     App.initWeb3();
 
     if (window.location.href.endsWith('/marketplace')){
-      var receiptFullList = App.loadReceiptData();
-      var currentUser = App.currentAccount;
-      var data = receiptFullList.filter(obj=> (obj.seller != currentUser) && (obj.active == true));
-
-      var receiptRows = $('#receipt-row');
-      var receiptCard = $('#receipt-card');
-      
-      for (i = 0; i < data.length; i ++) {
-        receiptCard.find('.receipt-title').text(data[i].name);
-        receiptCard.find('.receipt-price').text(data[i].price);
-        receiptCard.find('.receipt-seller').text(data[i].seller);
-        receiptCard.find('.receipt-warehouse').text(data[i].warehouse);
-        receiptCard.find('.receipt-tokenid').text(data[i].tokenId);
-        receiptCard.find('.receipt-highestbid').text(data[i].highestBid);
-        receiptRows.append(receiptCard.html());
-        App.receiptArray.push(data[i].name);
-      }
-        
+      fetch(`${App.backendUrl}/load`)
+        .then(resp=> resp.json())
+        .then(receiptFullList => {
+          console.log(receiptFullList);
+          //var currentUser = App.currentAccount;
+          var data = receiptFullList.filter(obj => (obj.active == true));
+          console.log(data);
+          // var receiptRows = $('#receipt-row');
+          // var receiptCard = $('#receipt-card');
+          // for (i = 0; i < data.length; i ++) {
+          //   receiptCard.find('.receipt-title').text(data[i].name);
+          //   receiptCard.find('.receipt-price').text(data[i].price);
+          //   receiptCard.find('.receipt-seller').text(data[i].seller);
+          //   receiptCard.find('.receipt-warehouse').text(data[i].warehouse);
+          //   receiptCard.find('.receipt-tokenid').text(data[i].tokenId);
+          //   receiptCard.find('.receipt-highestbid').text(data[i].highestBid);
+          //   receiptRows.append(receiptCard.html());
+          //   App.receiptArray.push(data[i].name);
+          // }
+        })        
     } else if (window.location.href.endsWith('/myprofile')) {
-      var receiptsFullList = App.loadReceiptData();
-      var currentUserProfile = App.currentAccount;
-      var data = receiptsFullList.filter(obj=> (obj.seller == currentUserProfile) && (obj.active == true));
-      
-      var receiptRows = $('#receipt-rows');
-      var receiptCard = $('#receipt-card');
+        fetch(`${App.backendUrl}/load`)
+          .then(resp=> resp.json())
+          .then(receiptsFullList => {
+            console.log(receiptsFullList);
+            var currentUserProfile = App.currentAccount;
+            var data = receiptsFullList.filter(obj => (obj.active == true));
 
-      for (i = 0; i < data.length; i ++) {
-        receiptCard.find('.receipt-title').text(data[i].name);
-        receiptCard.find('.receipt-price').text(data[i].price);
-        receiptCard.find('.receipt-seller').text(data[i].seller);
-        receiptCard.find('.receipt-warehouse').text(data[i].warehouse);
-        receiptCard.find('.receipt-tokenid').text(data[i].tokenId);
-        receiptCard.find('.receipt-highestbid').text(data[i].highestBid);
-        receiptRows.append(receiptCard.html());
-        App.receiptArray.push(data[i].name);
-      }
+            // var receiptRows = $('#receipt-rows');
+            // var receiptCard = $('#receipt-card');
+            // for (i = 0; i < data.length; i ++) {
+            //   receiptCard.find('.receipt-title').text(data[i].name);
+            //   receiptCard.find('.receipt-price').text(data[i].price);
+            //   receiptCard.find('.receipt-seller').text(data[i].seller);
+            //   receiptCard.find('.receipt-warehouse').text(data[i].warehouse);
+            //   receiptCard.find('.receipt-tokenid').text(data[i].tokenId);
+            //   receiptCard.find('.receipt-highestbid').text(data[i].highestBid);
+            //   receiptRows.append(receiptCard.html());
+            //   App.receiptArray.push(data[i].name);
+            // }
+          })
     }
   },
 
@@ -172,13 +185,14 @@ App = {
       if (warehouseParticipant === "") {
         alert("Please enter proper EOA address", "Reverted!");
         return false;
-    } else { 
+      } else { 
         App.contracts.receipt.deployed().then(function (instance) {
           moderatorInstance = instance;
           return moderatorInstance.grantWarehouseRole(warehouseParticipant,{from: account});
         }).then(function (result, err) {
           if (result) { 
-            alert("Successfully granted warehouse participant")
+            alert("Successfully granted warehouse participant");
+
           }
         }).catch(function (err) {
           console.log(err);
@@ -216,7 +230,8 @@ App = {
   handleCreateWarehouseReceipt: function () {
     console.log("Here Creating Warehouse Receipt");
     //event.preventDefault();
-    //const receiptsData = App.loadReceiptData();
+
+
     var sellerAddress = $("#seller-address").val();
     var sellerPrice = $("#price").val();
     var assetURI = "Not available";
@@ -230,25 +245,29 @@ App = {
         return moderatorInstance.createWarehouseReceipt( sellerAddress, assetURI, sellerPrice, receiptName, {from: account }); // added from parameter
       }).then(function (result, err) {
         if (result) {
-          const receiptsData = App.loadReceiptData();
-          receiptsData.push({
-            name: receiptName,
-            active: false,
-            price: sellerPrice,
-            seller: sellerAddress,
-            warehouse: account,
-            burnit: false,
-            tokenId: result,
-            highestBid: 0,
-            highestBidder: "",
-            destroyed: false
-          })
-          App.saveReceiptData(receiptsData);
+          //const receiptsData = App.loadReceiptData();
+          receiptFullList = loadJSON();
+          
+          receiptFullList.push({
+                name: receiptName,
+                active: false,
+                price: sellerPrice,
+                seller: sellerAddress,
+                warehouse: account,
+                burnit: false,
+                tokenId: result,
+                highestBid: 0,
+                highestBidder: "",
+                destroyed: false
+          });
+
+          updateJSON(receiptFullList);
 
           alert("Warehouse Receipt is created");
+
         }
       }).catch(function (err) {
-        alert("Warehouse Receipt Generation Failed!");
+          alert("Warehouse Receipt Generation Failed!");
       });
     });
   },
@@ -268,11 +287,11 @@ App = {
             return moderatorInstance.destroyToken(tokenId, {from: account});
           }).then(function (result, err) {
           if (result) { 
-            const receiptsData = App.loadReceiptData();
+            //const receiptsData = App.loadReceiptData();
             receiptsData[tokenId-1].burnit = true;
             receiptsData[tokenId-1].active = false;
             receiptsData[tokenId-1].destroyed = true;
-            App.saveReceiptData(receiptsData);
+            //App.saveReceiptData(receiptsData);
             alert("Successfully destroyed the receipt");
           }}).catch(function (err) {
             alert("Unable to destroy the receipt");
@@ -297,9 +316,9 @@ App = {
           return sellerInstance.activateReceipt(tokenId, {from: account});
         }).then(function (result, err) {
           if (result) { 
-            const receiptsData = App.loadReceiptData();
+            //const receiptsData = App.loadReceiptData();
             receiptsData[tokenId-1].active = true;
-            App.saveReceiptData(receiptsData);
+            //App.saveReceiptData(receiptsData);
             alert("Successfully activated the receipt");
           }
         }).catch(function (err) {
@@ -325,9 +344,9 @@ App = {
           return sellerInstance.deactivateReceipt(tokenId,{from: account});
         }).then(function (result, err) {
           if (result) { 
-            const receiptsData = App.loadReceiptData();
+            //const receiptsData = App.loadReceiptData();
             receiptsData[tokenId-1].active = false;
-            App.saveReceiptData(receiptsData);
+            //App.saveReceiptData(receiptsData);
             alert("Successfully deactivated the receipt");
           }
         }).catch(function (err) {
@@ -354,9 +373,9 @@ App = {
           return sellerInstance.setPrice(tokenId, price, {from: account});
         }).then(function (result, err) {
           if (result) { 
-            const receiptsData = App.loadReceiptData();
+            //const receiptsData = App.loadReceiptData();
             receiptsData[tokenId-1].price = price;
-            App.saveReceiptData(receiptsData);
+            //App.saveReceiptData(receiptsData);
             alert("Successfully setprice for the receipt");
           }
         }).catch(function (err) {
@@ -382,9 +401,9 @@ App = {
           return sellerInstance.setPrice(tokenId, {from: account});
         }).then(function (result, err) {
           if (result) { 
-            const receiptsData = App.loadReceiptData();
+            //const receiptsData = App.loadReceiptData();
             receiptsData[tokenId-1].burnit = true;
-            App.saveReceiptData(receiptsData);
+            //App.saveReceiptData(receiptsData);
             alert("Successfully allow the receipt burn");
           }
         }).catch(function (err) {
@@ -428,10 +447,10 @@ App = {
         return buyerInstance.bidForReceipt(tokenId, bid, {from: account});
       }).then(function (result, err) {
         if (result) {
-          const receiptsData = App.loadReceiptData();
+          //const receiptsData = App.loadReceiptData();
           receiptsData[tokenId-1].highestBid = bid;
           receiptsData[tokenId-1].highestBidder = account;
-          App.saveReceiptData(receiptsData); 
+          //App.saveReceiptData(receiptsData); 
           alert("successfully placed bid");
         }
       }).catch(function (err) {
@@ -453,10 +472,10 @@ App = {
         return buyerInstance.buyReceipt(tokenId,{from: account});
       }).then(function (result, err) {
         if (result) { 
-          const receiptsData = App.loadReceiptData();
+          //const receiptsData = App.loadReceiptData();
           receiptsData[tokenId-1].active = false;
           receiptsData[tokenId-1].seller = account;
-          App.saveReceiptData(receiptsData);
+          //App.saveReceiptData(receiptsData);
           alert("successfully bought the receipt");
         }
       }).catch(function (err) {
