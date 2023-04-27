@@ -52,19 +52,19 @@ contract DigitalWarehouseReceipt is ERC721, ERC721URIStorage, AccessControl, Own
     }
 
     //Granting warehouse role to a user by only moderator
-    function grantWarehouseRole(address to) public onlyRole(MODERATOR){
+    function grantWarehouseRole(address to) public onlyRole(MODERATOR) returns (bool){
         _grantRole(WAREHOUSE, to);
         return true;
     }
 
     //Revoking warehouse role to the user by only moderator
-    function revokeWarehouseRole(address to) public onlyRole(MODERATOR) { 
+    function revokeWarehouseRole(address to) public onlyRole(MODERATOR) returns (bool) { 
         _revokeRole(WAREHOUSE, to);
         return true;
     }
 
     //Creating warehouse receipts by authorized warehouse user only
-    function createWarehouseReceipt(address to, string memory uri, uint256 price, string memory receiptName) public onlyRole(WAREHOUSE) {
+    function createWarehouseReceipt(address to, string memory uri, uint256 price, string memory receiptName) public onlyRole(WAREHOUSE) returns (uint256) {
         uint256 tokenId = _tokenIdCounter.current();
         _safeMint(to, tokenId);
         _setTokenURI(tokenId, uri);
@@ -84,7 +84,7 @@ contract DigitalWarehouseReceipt is ERC721, ERC721URIStorage, AccessControl, Own
     }
 
    //Buyer can bid the product for lower price than offered by seller, so that the seller can know and decrease the price of the product.
-   function bidForReceipt(uint tokenId, uint bid) public { 
+   function bidForReceipt(uint tokenId, uint bid) public returns (bool) { 
         address bidder = msg.sender;
          require(WarehouseReceipts[tokenId].seller != msg.sender, "Seller of the token can't place bid"); //seller can't place bid
         if ( bidder.balance <= bid || HighestBid[tokenId] > bid) { revert(); } //checking whether bidder has sufficient balance
@@ -94,7 +94,7 @@ contract DigitalWarehouseReceipt is ERC721, ERC721URIStorage, AccessControl, Own
     }
 
     //Seller can activate the receipts as per requirement to enable trading
-    function activateReceipt(uint tokenId) public {
+    function activateReceipt(uint tokenId) public returns (bool) {
         require(WarehouseReceipts[tokenId].active == false, "Certificate is already active for trading.");
         require(WarehouseReceipts[tokenId].seller == msg.sender, "Owner/Seller of the token receipt can change the status");
         WarehouseReceipts[tokenId].active = true;
@@ -103,7 +103,7 @@ contract DigitalWarehouseReceipt is ERC721, ERC721URIStorage, AccessControl, Own
     }
 
     //A buyer can buy the receipt for the price offered by the seller and transaction happens along with the trasfer of the receipt ownership
-    function buyReceipt(uint tokenId) public payable {
+    function buyReceipt(uint tokenId) public payable returns (bool) {
         require(WarehouseReceipts[tokenId].active == true, "Certificate is not active for buying.");
         require(WarehouseReceipts[tokenId].price == msg.value, "Incorrect amount, Recheck the price.");
         if(WarehouseReceipts[tokenId].seller == msg.sender){ revert(); }
@@ -118,7 +118,7 @@ contract DigitalWarehouseReceipt is ERC721, ERC721URIStorage, AccessControl, Own
     }
     
     //A seller can Deactivate the receipts to pause the trade
-    function deactivateReceipt(uint tokenId) public {
+    function deactivateReceipt(uint tokenId) public returns (bool) {
         require(WarehouseReceipts[tokenId].active == true, "Certificate is already inactive for trading.");
         require(WarehouseReceipts[tokenId].seller == msg.sender, "Owner/Seller of the token receipt can change the status");
         WarehouseReceipts[tokenId].active = false;
@@ -127,19 +127,19 @@ contract DigitalWarehouseReceipt is ERC721, ERC721URIStorage, AccessControl, Own
     }
 
     //A seller can change the price he is willing to sell
-    function setPrice(uint tokenId, uint256 price) public onlySeller(tokenId){
+    function setPrice(uint tokenId, uint256 price) public onlySeller(tokenId) returns (uint256) {
         WarehouseReceipts[tokenId].price = price;
         return price;
     }
 
     //Once the product is delivered, the seller will allow the warehouse owner to destroy the token.
-    function allowTokenDestroy(uint tokenId) public onlySeller(tokenId) {
+    function allowTokenDestroy(uint tokenId) public onlySeller(tokenId) returns (uint256) {
         WarehouseReceipts[tokenId].burnit = true;
         return true;
     }
 
     //After getting destroy approval from seller, warehouse owner destroys the token
-    function destroyToken(uint tokenId) public onlyRole(WAREHOUSE) {
+    function destroyToken(uint tokenId) public onlyRole(WAREHOUSE) returns (bool) {
         if(!WarehouseReceipts[tokenId].burnit){
             revert();
         }
