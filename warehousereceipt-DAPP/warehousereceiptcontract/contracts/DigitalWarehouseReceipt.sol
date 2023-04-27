@@ -133,7 +133,7 @@ contract DigitalWarehouseReceipt is ERC721, ERC721URIStorage, AccessControl, Own
     }
 
     //Once the product is delivered, the seller will allow the warehouse owner to destroy the token.
-    function allowTokenDestroy(uint tokenId) public onlySeller(tokenId) returns (uint256) {
+    function allowTokenDestroy(uint tokenId) public onlySeller(tokenId) returns (bool) {
         WarehouseReceipts[tokenId].burnit = true;
         return true;
     }
