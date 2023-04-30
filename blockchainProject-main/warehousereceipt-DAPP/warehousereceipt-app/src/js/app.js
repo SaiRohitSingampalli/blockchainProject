@@ -48,7 +48,7 @@ App = {
         fetch(`${App.baseUrl}/load`)
           .then(resp=> resp.json())
           .then(receiptFullList => {
-            var data = receiptFullList.filter(obj => ((obj.active == true) && (obj.destroy == false)));
+            var data = receiptFullList.filter(obj => ((obj.active == true) && (obj.destroy == false) && (obj.burnit == false) &&(obj.seller != account)));
             var receiptRows = $('#receipt-row');
             var receipt = $('#receipt-holder');
             for (i = 0; i < data.length; i ++) {
@@ -492,6 +492,7 @@ App = {
 
                 receiptsData[position].burnit = true;
                 receiptsData[position].destroy = true;
+                receiptsData[position].active = false;
               
                 fetch(`${App.baseUrl}/update`,{
                   method: "POST",
