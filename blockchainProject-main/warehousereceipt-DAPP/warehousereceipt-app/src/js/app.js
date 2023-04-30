@@ -1,16 +1,15 @@
 App = {
 
-  web3Provider: null,
+  web3Connector: null,
   contracts: {},
   url: 'http://127.0.0.1:7545',
-  backendUrl: 'http://localhost:3000',
+  baseUrl: 'http://localhost:3000',
   moderator: null,
   currentAccount: null,
   activeCount: 0,
 
   
   init: function () {
-    console.log("Checkpoint 0");
     App.initWeb3();
 
     if (window.location.href.endsWith('/myreceipts')){
@@ -20,7 +19,7 @@ App = {
         var account = accounts[0];
         console.log("myprofile");
 
-        fetch(`${App.backendUrl}/load`)
+        fetch(`${App.baseUrl}/load`)
           .then(resp => resp.json())
           .then(receiptFullList => {
             console.log(receiptFullList)
@@ -46,7 +45,7 @@ App = {
       web3.eth.getAccounts(function(error, accounts) {
         var account = accounts[0];
         console.log("marketplace");
-        fetch(`${App.backendUrl}/load`)
+        fetch(`${App.baseUrl}/load`)
           .then(resp=> resp.json())
           .then(receiptFullList => {
             var data = receiptFullList.filter(obj => ((obj.active == true) && (obj.destroy == false)));
@@ -69,12 +68,12 @@ App = {
   initWeb3: function () {
     // Is there is an injected web3 instance?
     if (typeof web3 !== 'undefined') {
-      App.web3Provider = web3.currentProvider;
+      App.web3Connector = web3.currentProvider;
     } else {
       // If no injected web3 instance is detected, fallback to the TestRPC
-      App.web3Provider = new Web3.providers.HttpProvider(App.url);
+      App.web3Connector = new Web3.providers.HttpProvider(App.url);
     }
-    web3 = new Web3(App.web3Provider);
+    web3 = new Web3(App.web3Connector);
     ethereum.enable();
     App.populateAddress();
     return App.initContract();
@@ -85,7 +84,7 @@ App = {
       // Get the necessary contract artifact file and instantiate it with truffle-contract
       var receiptArtifact = data;
       App.contracts.receipt = TruffleContract(receiptArtifact);
-      App.contracts.receipt.setProvider(App.web3Provider);
+      App.contracts.receipt.setProvider(App.web3Connector);
       App.currentAccount = web3.eth.coinbase;
       jQuery('#current_account').text(App.currentAccount);
       return App.bindEvents();
@@ -129,13 +128,14 @@ App = {
   },
 
   handleActiveCount: function (){ 
-    console.log("Fetch Active Count");
-    fetch(`${App.backendUrl}/load`)
+
+    fetch(`${App.baseUrl}/load`)
       .then(resp=> resp.json())
       .then(receiptsData => {
         var activeCountReceipts = receiptsData.filter(obj => (obj.active == true));
-        const displayActiveCount = "Active Count: ".concat(activeCountReceipts.length);
-        alert(displayActiveCount);
+        const displayActiveCount = "Active Receipt Count: ".concat(activeCountReceipts.length);
+        App.activeCount = displayActiveCount;
+        alert(App.activeCount);
 
     })
   },
@@ -144,18 +144,15 @@ App = {
     console.log("Here for buying");
     var tokenId = parseInt($(event.target).data('id'));
     var price = parseInt($(event.target).data('price'));
-    console.log(price);
-    console.log(tokenId);
     web3.eth.getAccounts(function(error, accounts) {
       var account = accounts[0];
-      console.log(account);
  
       App.contracts.receipt.deployed().then(function (instance) {
         buyerInstance = instance;
         return buyerInstance.buyReceipt(tokenId,{from: account,value:price*1e18});
       }).then(function (result, err) {
         if (result) {
-          fetch(`${App.backendUrl}/load`)
+          fetch(`${App.baseUrl}/load`)
             .then(resp=> resp.json())
             .then(receiptsData => {
               var position = 0;
@@ -168,18 +165,17 @@ App = {
 
               receiptsData[position].active = false;
               receiptsData[position].seller = account;
-              fetch(`${App.backendUrl}/update`,{
+              fetch(`${App.baseUrl}/update`,{
                 method: "POST",
                 headers:{'Content-Type': 'application/json'},
                 body: JSON.stringify(receiptsData)
               })
               .then(resp=> resp.json())
               .then(resp=>console.log(resp))
-          alert("successfully bought the receipt");
+                alert("successfully bought the receipt");  
           })
         }
       }).catch(function (err) {
-        console.log(err);
         alert("transaction was not successful");
        
       });
@@ -198,7 +194,7 @@ App = {
           return sellerInstance.activateReceipt(tokenId, {from: account});
         }).then(function (result, err) {
           if (result) { 
-            fetch(`${App.backendUrl}/load`)
+            fetch(`${App.baseUrl}/load`)
             .then(resp=> resp.json())
             .then(receiptsData => {
               var position = 0;
@@ -211,7 +207,7 @@ App = {
 
               receiptsData[position].active = true;
             
-              fetch(`${App.backendUrl}/update`,{
+              fetch(`${App.baseUrl}/update`,{
                 method: "POST",
                 headers:{'Content-Type': 'application/json'},
                 body: JSON.stringify(receiptsData)
@@ -222,7 +218,7 @@ App = {
           })
         }
         }).catch(function (err) {
-          alert("Unable to activate the receipt");
+          alert("Unable to activate the receipt. Try using seller account");
         });
       
     });
@@ -239,7 +235,7 @@ App = {
           return sellerInstance.deactivateReceipt(tokenId,{from: account});
         }).then(function (result, err) {
           if (result) { 
-            fetch(`${App.backendUrl}/load`)
+            fetch(`${App.baseUrl}/load`)
             .then(resp=> resp.json())
             .then(receiptsData => {
 
@@ -253,7 +249,7 @@ App = {
 
               receiptsData[position].active = false;
             
-              fetch(`${App.backendUrl}/update`,{
+              fetch(`${App.baseUrl}/update`,{
                 method: "POST",
                 headers:{'Content-Type': 'application/json'},
                 body: JSON.stringify(receiptsData)
@@ -264,7 +260,7 @@ App = {
           })
         }
         }).catch(function (err) {
-          alert("Unable to deactivate the receipt");
+          alert("Unable to deactivate the receipt. Try using seller account.");
         });
       
     });
@@ -279,7 +275,6 @@ App = {
     var receiptName = $("#receipt-name").val();
     var account;
     var tokenId;
-    var ID;
     var uri = $("#uri-input").val() || "http://localhost:3000/";
 
     web3.eth.getAccounts(function(error, accounts) {
@@ -292,8 +287,7 @@ App = {
 
         if (result) {
           tokenId = parseInt(result.logs[1].args.tokenId);
-          ID = tokenId.toString();
-          fetch(`${App.backendUrl}/load`)
+          fetch(`${App.baseUrl}/load`)
             .then(resp=> resp.json())
             .then(receiptsData => {
               receiptsData.push({
@@ -308,7 +302,7 @@ App = {
                 burnit: false,
                 destroy: false,
               })
-              fetch(`${App.backendUrl}/update`,{
+              fetch(`${App.baseUrl}/update`,{
                 method: "POST",
                 headers:{'Content-Type': 'application/json'},
                 body: JSON.stringify(receiptsData)
@@ -319,7 +313,7 @@ App = {
             }).catch(function (err) {
               alert("Warehouse receipt generation failed");
             })
-           
+
         }
       })
     })
@@ -340,11 +334,11 @@ App = {
           return moderatorInstance.grantWarehouseRole(warehouseParticipant,{from: account});
         }).then(function (result, err) {
           if (result) { 
-            alert("Successfully granted warehouse participant")
+            alert("Successfully granted warehouse participant");
+            App.moderator = account;
           }
         }).catch(function (err) {
-          console.log(err);
-          alert("Unable to grant the access");
+          alert("Unable to grant the access. Try using moderator account.");
         });
       }});
   },
@@ -364,10 +358,10 @@ App = {
             return moderatorInstance.revokeWarehouseRole(warehouseParticipant,{from: account});
           }).then(function (result, err) {
             if (result) { 
-              alert("Successfully revoked warehouse participant")
+              alert("Successfully revoked warehouse participant");
             }
           }).catch(function (err) {
-              alert("Unable to revoke the access");
+              alert("Unable to revoke the access. Try using moderator account.");        
           });
       }
     });
@@ -380,8 +374,6 @@ App = {
     var jprice = $("#price").val();
     var price = (parseInt($("#price").val())*1e18).toString();
     
-    console.log(typeof price);
-    
     web3.eth.getAccounts(function(error, accounts) {
       var account = accounts[0];
       if (tokenId === "" || (price <= 0)) {
@@ -390,13 +382,10 @@ App = {
       } else { 
         App.contracts.receipt.deployed().then(function (instance) {
           sellerInstance = instance;
-          console.log("update price here");
           return sellerInstance.setPrice(tokenId, price, {from: account});
         }).then(function (result, err) {
           if (result) { 
-            console.log("update price");
-            console.log(result);
-            fetch(`${App.backendUrl}/load`)
+            fetch(`${App.baseUrl}/load`)
               .then(resp=> resp.json())
               .then(receiptsData => {
 
@@ -410,14 +399,15 @@ App = {
 
                 receiptsData[position].price = jprice;
                 
-                fetch(`${App.backendUrl}/update`,{
+                fetch(`${App.baseUrl}/update`,{
                   method: "POST",
                   headers:{'Content-Type': 'application/json'},
                   body: JSON.stringify(receiptsData)
                 })
                 .then(resp=> resp.json())
                 .then(resp=>console.log(resp))
-                  alert("Successfully updated price for the receipt");
+                  alert("Successfully updated price for the receipt");            
+                  location.reload();
               })
           }
         }).catch(function (err) {
@@ -430,7 +420,6 @@ App = {
   handleAllowDestroy: function () {
     console.log("Here to allow to destroy the receipt");
     var tokenId = $("#receipt-number1").val();
-    console.log(tokenId);
     web3.eth.getAccounts(function(error, accounts) {
       var account = accounts[0];
       if (tokenId === "") {
@@ -443,7 +432,7 @@ App = {
         }).then(function (result, err) {
           if (result) { 
            
-            fetch(`${App.backendUrl}/load`)
+            fetch(`${App.baseUrl}/load`)
               .then(resp=> resp.json())
               .then(receiptsData => {
 
@@ -457,14 +446,14 @@ App = {
 
                 receiptsData[position].burnit = true;
               
-                fetch(`${App.backendUrl}/update`,{
+                fetch(`${App.baseUrl}/update`,{
                   method: "POST",
                   headers:{'Content-Type': 'application/json'},
                   body: JSON.stringify(receiptsData)
                 })
                 .then(resp=> resp.json())
                 .then(resp=>console.log(resp))
-            alert("Successfully allow the receipt burn");
+                  alert("Successfully allow the receipt burn");
              })
           }
         }).catch(function (err) {
@@ -477,7 +466,6 @@ App = {
   handleDestroyReceipt: function () {
     console.log("Here to allow to destroy the receipt");
     var tokenId = $("#receipt-number").val();
-    console.log(tokenId);
     web3.eth.getAccounts(function(error, accounts) {
       var account = accounts[0];
       if (tokenId === "") {
@@ -490,7 +478,7 @@ App = {
         }).then(function (result, err) {
           if (result) { 
            
-            fetch(`${App.backendUrl}/load`)
+            fetch(`${App.baseUrl}/load`)
               .then(resp=> resp.json())
               .then(receiptsData => {
 
@@ -505,7 +493,7 @@ App = {
                 receiptsData[position].burnit = true;
                 receiptsData[position].destroy = true;
               
-                fetch(`${App.backendUrl}/update`,{
+                fetch(`${App.baseUrl}/update`,{
                   method: "POST",
                   headers:{'Content-Type': 'application/json'},
                   body: JSON.stringify(receiptsData)
@@ -526,18 +514,15 @@ App = {
     console.log("Get receipt details");
     var tokenId = $("#receipt-number2").val();
     var counter = 0;
-    console.log("receiptdetais");
-    console.log(tokenId);
     web3.eth.getAccounts(function(error, accounts) {
       var tokenDetails;
       if (tokenId == "") {
         alert("Please enter valid receipt number");
         return false;
       } else {
-        fetch(`${App.backendUrl}/load`)
+        fetch(`${App.baseUrl}/load`)
         .then(resp=> resp.json())
         .then(receiptsData => {
-          var position = 0;
           for (i=0; i<=receiptsData.length; i++) {
             if ((receiptsData[i].tokenId == tokenId) && (receiptsData[i].active == true)) {
               tokenDetails = "Receipt Name:".concat(" ", receiptsData[i].name, "\n",
@@ -578,7 +563,7 @@ App = {
           return buyerInstance.bidForReceipt(tokenId, bid, {from: account});
         }).then(function (result, err) {
           if (result) {
-            fetch(`${App.backendUrl}/load`)
+            fetch(`${App.baseUrl}/load`)
               .then(resp=> resp.json())
               .then(receiptsData => {
                 var position = 0;
@@ -591,7 +576,7 @@ App = {
 
                 receiptsData[position].highestBid = bid;
                 receiptsData[position].highestBidder = account;
-                fetch(`${App.backendUrl}/update`,{
+                fetch(`${App.baseUrl}/update`,{
                   method: "POST",
                   headers:{'Content-Type': 'application/json'},
                   body: JSON.stringify(receiptsData)
@@ -599,6 +584,7 @@ App = {
                 .then(resp=> resp.json())
                 .then(resp=>console.log(resp))
                 alert("Bid placed successfully");
+                location.reload();
 
               })
             }
