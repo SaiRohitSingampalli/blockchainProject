@@ -170,11 +170,12 @@ App = {
               })
               .then(resp=> resp.json())
               .then(resp=>console.log(resp))
-                alert("successfully bought the receipt");  
+                alert("Successfully purchased the receipt");
+                location.reload();  
           })
         }
       }).catch(function (err) {
-        alert("transaction was not successful");
+        alert("Transaction was not successful");
        
       });
     });
@@ -307,7 +308,7 @@ App = {
               })
               .then(resp=> resp.json())
               .then(resp=>console.log(resp))
-              alert("Warehouse Receipt is created");
+              alert("Warehouse Receipt is created");    
             }).catch(function (err) {
               alert("Warehouse receipt generation failed");
             })
@@ -503,7 +504,7 @@ App = {
              })
           }
         }).catch(function (err) {
-          alert("Unable to destroy the receipt");
+          alert("Unable to destroy the receipt. Try using warehouse account.");
         });
       }
     });
@@ -589,7 +590,7 @@ App = {
             }
           }).catch(function (err) {
                 
-                alert("error in submitting bids");
+                alert("Error in submitting bids");
           });
         }
       });
