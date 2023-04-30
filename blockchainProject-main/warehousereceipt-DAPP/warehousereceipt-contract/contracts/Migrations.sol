@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-//standard migration file to run truffle migrate --reset
+//standard migration file to run truffle migrate --reset reference from lecture code
 pragma solidity ^0.8.9;
 
 contract Migrations {
