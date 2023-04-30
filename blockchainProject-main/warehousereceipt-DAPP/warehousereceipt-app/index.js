@@ -1,7 +1,7 @@
 var express = require('express');
 var engines = require('consolidate');
 const fs = require('fs');
-const http = require('http');
+
 var app = express();
 
 app.use(express.static('src'));
