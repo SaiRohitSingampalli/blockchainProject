@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+//standard migration file to run truffle migrate --reset
 pragma solidity ^0.8.9;
 
 contract Migrations {
