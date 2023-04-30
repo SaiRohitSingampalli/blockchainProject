@@ -38,7 +38,6 @@ const loadReceiptData =  () => {
 
 const saveReceiptData =  (updatedReceiptData) => {
   const updatedReceiptDataJSON = JSON.stringify(updatedReceiptData);
-  console.log(updatedReceiptDataJSON);
   fs.writeFileSync("./receipts.json", updatedReceiptDataJSON);
   return true;
 }
@@ -55,7 +54,7 @@ const fetchReceipt = (id) => {
 
 app.get('/load', function (req, res) {
   const listReceipts = loadReceiptData();
-  //res.json(listReceipts);
+  
   res.writeHead(200, {'Content-Type': 'application/json'});
   const jsonContent = JSON.stringify(listReceipts);
   res.end(jsonContent);
@@ -65,17 +64,17 @@ app.get('/load', function (req, res) {
 app.post('/update', function(req, res) { 
    const updatedReceiptData = req.body;
    const updatedListStatus = saveReceiptData(updatedReceiptData);
-   // Handle the request body here
+
  
    res.json({ message: updatedListStatus });
-   //res.json([{response: updatedListStatus}]);
+  
 
 })
 
 app.get('/receipt/:id', function(req, res) {
 
   const assetURI = fetchReceipt(req.params.id);
-  console.log('test url');
+
   if (assetURI == "http://localhost:3000/") {
     res.redirect('/receiptbuyandbid');
   } else if (assetURI) {
@@ -83,7 +82,6 @@ app.get('/receipt/:id', function(req, res) {
   } else {
     res.writeHead(404, {'Content-Type': 'text/plain'});
     res.end('Receipts Not Found');
-    //res.redirect('/');
   }
 })
 
