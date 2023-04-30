@@ -17,14 +17,14 @@ App = {
 
       web3.eth.getAccounts(function(error, accounts) {
         var account = accounts[0];
-        console.log("myprofile");
+        
 
         fetch(`${App.baseUrl}/load`)
           .then(resp => resp.json())
           .then(receiptFullList => {
-            console.log(receiptFullList)
-            var data = receiptFullList.filter(obj=> ((obj.seller == account) && (obj.destroy == false)));
-            console.log(data);
+            
+            var data = receiptFullList.filter(objectData=> ((objectData.seller == account) && (objectData.destroy == false)));
+           
             var receiptRows = $('#receipt-row');
             var receipt = $('#receipt-holder');
             for (i = 0; i < data.length; i ++) {
@@ -44,11 +44,10 @@ App = {
     } else if (window.location.href.endsWith('/receiptbuyandbid')) {
       web3.eth.getAccounts(function(error, accounts) {
         var account = accounts[0];
-        console.log("marketplace");
         fetch(`${App.baseUrl}/load`)
           .then(resp=> resp.json())
           .then(receiptFullList => {
-            var data = receiptFullList.filter(obj => ((obj.active == true) && (obj.destroy == false) && (obj.burnit == false) &&(obj.seller != account)));
+            var data = receiptFullList.filter(objectData => ((objectData.active == true) && (objectData.destroy == false) && (objectData.burnit == false) &&(objectData.seller != account)));
             var receiptRows = $('#receipt-row');
             var receipt = $('#receipt-holder');
             for (i = 0; i < data.length; i ++) {
@@ -122,7 +121,6 @@ App = {
 
     var tokenId = $("#receipt-number3").val();
     openuri = "http://localhost:3000/receipt/".concat(tokenId);
-    console.log(openuri);
     window.open(openuri);
 
   },
@@ -141,7 +139,7 @@ App = {
   },
 
   handleBuyReceipt: function (event) {
-    console.log("Here for buying");
+
     var tokenId = parseInt($(event.target).data('id'));
     var price = parseInt($(event.target).data('price'));
     web3.eth.getAccounts(function(error, accounts) {
@@ -183,7 +181,7 @@ App = {
   },
 
   handleActivateWarehouseReceipt: function (event) {
-    console.log("Here to activate the ticket");
+  
     var tokenId = parseInt($(event.target).data('id'));
     
     web3.eth.getAccounts(function(error, accounts) {
@@ -225,7 +223,7 @@ App = {
   },
 
   handleDeactivateWarehouseReceipt: function (event) {
-    console.log("Here to deactivate the ticket");
+    
     var tokenId = parseInt($(event.target).data('id'));
 
     web3.eth.getAccounts(function(error, accounts) {
@@ -268,7 +266,7 @@ App = {
 
 
   handleCreateWarehouseReceipt: function () {
-    console.log("Here Creating Warehouse Receipt");
+    
     var sellerAddress = $("#seller-address-2").val();
     var ethprice = $("#price").val();
     var sellerPrice = (parseInt($("#price").val())*1e18).toString();
@@ -320,7 +318,7 @@ App = {
   },
 
   handleGrantAccess: function () {
-    console.log("Here to grant access");
+    
     var warehouseParticipant = $("#seller-address").val();
     
     web3.eth.getAccounts(function(error, accounts) {
@@ -344,7 +342,7 @@ App = {
   },
 
   handleRevokeAccess: function () {
-    console.log("Here to revoke access");
+    
     var warehouseParticipant = $("#seller-address").val();
     
     web3.eth.getAccounts(function(error, accounts) {
@@ -368,7 +366,7 @@ App = {
   },
 
   handleUpdateprice: function (event) {
-    console.log("Here to update price for receipt");
+    
    
     var tokenId = $("#receipt-number").val();
     var jprice = $("#price").val();
@@ -418,7 +416,7 @@ App = {
   },
 
   handleAllowDestroy: function () {
-    console.log("Here to allow to destroy the receipt");
+    
     var tokenId = $("#receipt-number1").val();
     web3.eth.getAccounts(function(error, accounts) {
       var account = accounts[0];
@@ -464,7 +462,7 @@ App = {
   },
 
   handleDestroyReceipt: function () {
-    console.log("Here to allow to destroy the receipt");
+    
     var tokenId = $("#receipt-number").val();
     web3.eth.getAccounts(function(error, accounts) {
       var account = accounts[0];
@@ -512,7 +510,7 @@ App = {
   },
 
   handleReceiptDetails: function () {
-    console.log("Get receipt details");
+    
     var tokenId = $("#receipt-number2").val();
     var counter = 0;
     web3.eth.getAccounts(function(error, accounts) {
@@ -550,7 +548,7 @@ App = {
   },
 
   handleBidForReceipt: function () {
-    console.log("Put a bid for the token");
+    
     var tokenId = $("#receipt-number").val();
     var bid = $("#price").val();
     web3.eth.getAccounts(function(error, accounts) {
