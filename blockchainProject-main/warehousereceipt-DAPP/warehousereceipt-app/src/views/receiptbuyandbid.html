@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Digital Warehouse Receipts</title>
+    <style>
+       h1 {
+        text-align: center;
+        background-color: white;
+        color: black;
+        width: 100%;
+        margin: 0;
+        font-size: 3em;
+      }
+      h2 {
+        margin: 20px 0 0;
+      }
+      body {
+        background-image: url("img/image.PNG");
+        background-size: cover;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        margin: 0;
+      }
+      .top-buttons {
+        display: flex;
+        position: absolute;
+        top: 0;
+        left: 0;
+        margin: 0;
+      }
+      .top-buttons button {
+        background-color: white;
+        border: none;
+        color: black;
+        padding: 10px;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .about-section {
+        position: absolute;
+        top: 0;
+        right: 10px;
+        display: flex;
+        flex-direction: column;
+      }
+      #about-button {
+        background-color: rgb(6, 244, 137);
+        border: none;
+        color: black;
+        padding: 10px;
+        font-size: 22px;
+        cursor: pointer;
+      }
+      #about-description {
+        display: none;
+        background-color: white;
+        border: 1px solid black;
+        padding: 10px;
+        margin-top: 10px;
+        max-width: 400px;
+      }
+      #about-button:focus + #about-description {
+        display: block;
+      }
+      .receipt-form {
+        background-color: white;
+        padding: 20px;
+        margin: 20px;
+        border-radius: 10px;
+      }
+      #receipt-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+      }
+      .receipt {
+        background-color: lightblue;
+        padding: 20px;
+        margin: 20px;
+        border-radius: 10px;
+        width: 200px;
+        opacity: 0.9;
+      }
+      .receipt h2 {
+        margin-top: 0;
+      }
+      .receipt p {
+        margin-bottom: 10px;
+      }
+      .receipt button {
+        margin-right: 10px;
+      }
+      .place-bid {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 200px;
+        height: 180px;
+        background-color: white;
+        padding: 10px;
+        margin: 10px;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.5);
+      }
+      .place-bid h2 {
+        margin: 0 0 10px;
+      }
+      .place-bid button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top: 10px;
+        transition: background-color 0.3s ease;
+      }
+      .place-bid button:hover {
+        background-color: #3e8e41;
+      }
+      .receipt-details {
+        position: fixed;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 180px;
+        height: 130px;
+        background-color: white;
+        padding: 20px;
+        margin: 20px;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.5);
+      }
+      .receipt-details h2 {
+        margin: 0 0 10px;
+      }
+      .receipt-details #get-details {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top: 10px;
+        transition: background-color 0.3s ease;
+      }
+      .receipt-details #get-details:hover {
+        background-color: #3e8e41;
+      }
+      .receipt-title {
+        display: inline-block;
+        margin-left: 5px;
+      }
+      .receipt-id {
+        display: inline-block;
+        margin-left: 5px;
+      }
+      .receipt-price{
+        display: inline-block;
+        margin-left: 5px;
+      }
+      .highest-bid{
+        display: inline-block;
+        margin-left: 5px;
+      }
+      .sample-receipt {
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        transform: translateX(-50%);
+        width: 240px;
+        height: 130px;
+        background-color: white;
+        padding: 20px;
+        margin: 20px;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.5);
+      }
+      .sample-receipt h2 {
+        margin: 0 0 10px;
+      }
+      .sample-receipt #get-sample-receipt {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top: 10px;
+        transition: background-color 0.3s ease;
+      }
+      .sample-receipt #get-sample-receipt:hover {
+        background-color: #3e8e41;
+      }
+      .buy-button{
+      background-color: #4CAF50; 
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+    }
+    </style>
+  </head>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/@truffle/contract@4.3.5/dist/truffle-contract.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.3.3/dist/web3.min.js"></script>
+    <h1>Digital Warehouse Receipts</h1>
+    <div class="top-buttons">
+      <a href="/receipt"><button style = "font-size: 22px;">Moderator</button></a>
+      <a href="/myreceipts"><button style = "font-size: 22px;">My Receipts</button></a>
+      <a href="/receiptbuyandbid"><button style = "font-size: 22px;">Marketplace</button></a>
+    </div> 
+    <div class="about-section">
+      <button id="about-button">About</button>
+      <div id="about-description">
+        <h3>About Digital Warehouse Receipts</h3>
+        <p>
+          This is decentralized Marketplace application where the Warehouse Receipts are traded and used for taking delivery from the warehouse. Only Accounts who have the warehouse access can create the receipts and assign it to the owner. Anyone who is on the platform can buy with the price posted by seller. There is an option to bid for a price which buyer is interested in and depending on the highest bid provided seller can change his price looking at the demand for his receipt in the open market. A receipt can be destroyed only by the warehouse after the delivery, provided the owner gives him the permission to destroy the receipt.
+        </p>
+      </div>
+    </div>
+    <h2 style = "font-size: 25px;">Available Receipts</h2>
+
+    <div id="receipt-holder" style="display: none;">
+      <div class="receipt" >
+        <label style = "font-size: 18px; font-weight: bold;">Receipt Title:</label>
+        <h3 class="receipt-title"></h3><br>
+        <label>Receipt Id:</label>
+        <p class="receipt-id"></p><br>
+        <label>Receipt Price:</label>
+        <p class="receipt-price"></p><span>ETH</span><br>
+        <label>Highest Bid:</label>
+        <p class="highest-bid"></p><span>ETH</span><br>
+        <button class="buy-button" data-id="" data-price="">Buy</button>
+      </div>
+    </div>
+
+    <div id="receipt-row">
+
+    </div>
+    <div class="place-bid">
+      <h2>Place Bid</h2>
+      <label class="subs-title">
+        <b>Receipt number:</b>&nbsp;
+        <input type="number" class="receipt-number" id="receipt-number" placeholder="Receipt number"></input>
+      </label>
+      <label class="subs-title">
+        <b>Price:</b>&nbsp;
+        <input type="number" class="price" id="price" placeholder="price"></input>
+      </label>
+      <button id="update-price">Update</button>
+    </div>
+    <div class="receipt-details">
+      <h2>Receipt Details</h2>
+      <label class="subs-title">
+        <b>Receipt number:</b>&nbsp;
+        <input type="number" class="receipt-number2" id="receipt-number2" placeholder="Receipt number"></input>
+      </label>
+      <button id="get-details">Get</button>
+    </div>
+    <div class="sample-receipt">
+      <h2>Sample Receipt</h2>
+      <label class="subs-title">
+        <b>Receipt number:</b>&nbsp;
+        <input type="number" class="receipt-number3" id="receipt-number3" placeholder="Receipt number"></input>
+      </label>
+      <button id="get-sample-receipt">Get</button>
+    </div>
+  </body>
+</html>

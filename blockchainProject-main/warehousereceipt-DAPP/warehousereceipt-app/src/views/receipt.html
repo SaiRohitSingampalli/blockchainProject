@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Digital Warhouse Receipts</title>
+    <style>
+      .heading h1 {
+        text-align: center;
+        background-color: white;
+        color: black;
+        width: 100%;
+        margin: 0;
+        font-size: 3em;
+      }
+      body {
+        background-image: url("img/image.PNG");
+        background-size: cover;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        margin: 0;
+      }
+      .top-buttons {
+        display: flex;
+        position: absolute;
+        top: 0;
+        left: 0;
+        margin: 0;
+        font-size: 25px;
+      }
+      .top-buttons button {
+        background-color: white;
+        border: none;
+        color: black;
+        padding: 10px;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .about-section {
+        position: absolute;
+        top: 0;
+        right: 10px;
+        display: flex;
+        flex-direction: column;
+      }
+      #about-button {
+        background-color: rgb(6, 244, 137);
+        border: none;
+        color: black;
+        padding: 10px;
+        font-size: 22px;
+        cursor: pointer;
+      }
+      #about-description {
+        display: none;
+        background-color: white;
+        border: 1px solid black;
+        padding: 10px;
+        margin-top: 10px;
+        max-width: 400px;
+      }
+      #about-button:focus + #about-description {
+        display: block;
+      }
+
+      .row {
+        border: 1px solid black;
+        padding: 10px;
+        margin: 10px;
+        height: 200px;
+      }
+      .moderator {
+        background-color: lightgray;
+        opacity: 0.9;
+      }
+      .receipt-form {
+        background-color: lightblue;
+        opacity: 0.9;
+      }
+      .destroy-receipt {
+        background-color: lightgray;
+        opacity: 0.9;
+      }
+      #total-receipt-count {
+        display: block;
+        margin: auto;
+        padding: 10px;
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: lightblue;
+      }
+      .address,
+      .name,
+      .price,
+      .url-input,
+      .receipt-number{
+        width: 300px; 
+        height: 40px;
+        font-size: 16px;
+      }
+
+      #grant-access,
+      #revoke-access ,
+      #destroy-receipt{
+        width: 120px; 
+        height: 40px;
+        font-size: 16px;
+      }
+      
+      #generate-receipt {
+      width: 120px; 
+      height: 40px;
+      font-size: 16px;
+      margin-top: 40px;
+      background-color: #4CAF50; 
+      color: white;
+      padding: 10px 20px;
+      transform: translateX(-50%);
+      display: flex;
+      display: block;
+      margin: 0 auto;
+      cursor: pointer;
+    }
+
+      #grant-access{
+      background-color: #4CAF50; 
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+    }
+  
+  #revoke-access, 
+  #destroy-receipt {
+    background-color: #f44336; 
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+  }
+
+    </style>
+  </head>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/@truffle/contract@4.3.5/dist/truffle-contract.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.3.3/dist/web3.min.js"></script>
+    <div class = "heading"><h1>Digital Warehouse Receipts</h1></div>
+    <div class="top-buttons">
+      <a href="/receipt"><button style = "font-size: 22px;">Moderator</button></a>
+      <a href="/myreceipts"><button style = "font-size: 22px;">My Receipts</button></a>
+      <a href="/receiptbuyandbid"><button style = "font-size: 22px;">Marketplace</button></a>
+    </div> 
+    <div class="row moderator">
+      <h1>Warehouse Access</h1>
+      <label class="subs-title">
+        <label style = "font-size: 32px; ">Address:</label>&nbsp
+        <input type="text" class="address" id="seller-address" placeholder="Enter address"></input>
+      </label>
+      <button id="grant-access" >Grant</button>
+      <button id="revoke-access">Revoke</button>
+    </div>
+    <div class="about-section">
+      <button id="about-button">About</button>
+      <div id="about-description">
+        <h3>About Digital Warehouse Receipts</h3>
+        <p>
+          This is decentralized Marketplace application where the Warehouse Receipts are traded and used for taking delivery from the warehouse. Only Accounts who have the warehouse access can create the receipts and assign it to the owner. Anyone who is on the platform can buy with the price posted by seller. There is an option to bid for a price which buyer is interested in and depending on the highest bid provided seller can change his price looking at the demand for his receipt in the open market. A receipt can be destroyed only by the warehouse after the delivery, provided the owner gives him the permission to destroy the receipt.
+        </p>
+      </div>
+    </div>
+    <div class="row receipt-form">
+      <h1>Create Receipt</h1>
+      <label class="subs-title">
+        <label style = "font-size: 32px; ">Name:</label>&nbsp
+        <input type="text" class="name" id="receipt-name" placeholder="Enter name"></input>
+      </label>
+      <label class="subs-title">
+        <label style = "font-size: 32px; ">Seller Address:</label>&nbsp
+        <input type="text" class="address" id="seller-address-2" placeholder="Enter address"></input>
+      </label>
+      <label class="subs-title">
+        <label style = "font-size: 32px; ">Price:</label>&nbsp
+        <input type="number" class="price" id="price" placeholder="Enter price"></input>
+      </label>
+      <label class="subs-title">
+        <label style = "font-size: 32px; ">Receipt uri:</label>&nbsp
+        <input type="text" class="url-input" id="uri-input" placeholder="Enter uri"></input>
+      </label>
+      <button id="generate-receipt">Create</button>
+    </div>
+    <div class="row destroy-receipt">
+      <h1>Destroy Receipt</h1>
+      <label class="subs-title">
+        <label style = "font-size: 32px; ">Receipt Number:</label>&nbsp
+        <input type="number" class="receipt-number" id="receipt-number" placeholder="Enter receipt number"></input>
+      </label>
+      <button class="destroy-receipt" id = "destroy-receipt">Destroy</button>
+    </div>
+    <button id="total-receipt-count">Total Active Receipt Count</button>
+  
+  </body>
+</html>
