@@ -6,7 +6,7 @@ Instructions:
 3. Check if the MetaMask is connected to your browser on every account.
 4. Ideally your first account on Ganache is the moderator account by default assign while initializing the DAPP application.
 5. Navigate to "\blockchainProject\blockchainProject-main\warehousereceipt-DAPP\warehousereceipt-contract" folder on terminal.
-6. Run "npm install" to install all the openzeppline dependencies for smart contract.
+6. Run "npm install" to install all the openzeppline dependencies for smart contract. Incase it doesn't work try install "npm install @openzeppelin/contracts" to install openzepplin dependencies.
 6. Run "truffle compile" 
 7. Run "truffle migrate --reset"
 8. Navigate to "\blockchainProject\blockchainProject-main\warehousereceipt-DAPP\warehousereceipt-app" folder on terminal.
