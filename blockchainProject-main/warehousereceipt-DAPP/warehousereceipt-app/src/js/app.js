@@ -20,7 +20,7 @@ App = {
         
 
         fetch(`${App.baseUrl}/load`)
-          .then(resp => resp.json())
+          .then(response => response.json())
           .then(receiptFullList => {
             
             var data = receiptFullList.filter(objectData=> ((objectData.seller == account) && (objectData.destroy == false)));
@@ -45,7 +45,7 @@ App = {
       web3.eth.getAccounts(function(error, accounts) {
         var account = accounts[0];
         fetch(`${App.baseUrl}/load`)
-          .then(resp=> resp.json())
+          .then(response=> response.json())
           .then(receiptFullList => {
             var data = receiptFullList.filter(objectData => ((objectData.active == true) && (objectData.destroy == false) && (objectData.burnit == false) &&(objectData.seller != account)));
             var receiptRows = $('#receipt-row');
@@ -128,9 +128,9 @@ App = {
   handleActiveCount: function (){ 
 
     fetch(`${App.baseUrl}/load`)
-      .then(resp=> resp.json())
+      .then(response=> response.json())
       .then(receiptsData => {
-        var activeCountReceipts = receiptsData.filter(obj => (obj.active == true));
+        var activeCountReceipts = receiptsData.filter(objectData => (objectData.active == true));
         const displayActiveCount = "Active Receipt Count: ".concat(activeCountReceipts.length);
         App.activeCount = displayActiveCount;
         alert(App.activeCount);
@@ -151,7 +151,7 @@ App = {
       }).then(function (result, err) {
         if (result) {
           fetch(`${App.baseUrl}/load`)
-            .then(resp=> resp.json())
+            .then(response=> response.json())
             .then(receiptsData => {
               var position = 0;
               for (i=0; i<=receiptsData.length; i++) {
@@ -168,8 +168,8 @@ App = {
                 headers:{'Content-Type': 'application/json'},
                 body: JSON.stringify(receiptsData)
               })
-              .then(resp=> resp.json())
-              .then(resp=>console.log(resp))
+              .then(response=> response.json())
+              .then(response=>console.log(response))
                 alert("Successfully purchased the receipt");
                 location.reload();  
           })
@@ -194,7 +194,7 @@ App = {
         }).then(function (result, err) {
           if (result) { 
             fetch(`${App.baseUrl}/load`)
-            .then(resp=> resp.json())
+            .then(response=> response.json())
             .then(receiptsData => {
               var position = 0;
               for (i=0; i<=receiptsData.length; i++) {
@@ -211,8 +211,8 @@ App = {
                 headers:{'Content-Type': 'application/json'},
                 body: JSON.stringify(receiptsData)
               })
-              .then(resp=> resp.json())
-              .then(resp=>console.log(resp))
+              .then(response=> response.json())
+              .then(response=>console.log(response))
             alert("Successfully activated the receipt");
           })
         }
@@ -235,7 +235,7 @@ App = {
         }).then(function (result, err) {
           if (result) { 
             fetch(`${App.baseUrl}/load`)
-            .then(resp=> resp.json())
+            .then(response=> response.json())
             .then(receiptsData => {
 
               var position = 0;
@@ -253,8 +253,8 @@ App = {
                 headers:{'Content-Type': 'application/json'},
                 body: JSON.stringify(receiptsData)
               })
-              .then(resp=> resp.json())
-              .then(resp=>console.log(resp))
+              .then(response=> response.json())
+              .then(response=>console.log(response))
             alert("Successfully deactivated the receipt");
           })
         }
@@ -287,7 +287,7 @@ App = {
         if (result) {
           tokenId = parseInt(result.logs[1].args.tokenId);
           fetch(`${App.baseUrl}/load`)
-            .then(resp=> resp.json())
+            .then(response=> response.json())
             .then(receiptsData => {
               receiptsData.push({
                 tokenId : tokenId,
@@ -306,8 +306,8 @@ App = {
                 headers:{'Content-Type': 'application/json'},
                 body: JSON.stringify(receiptsData)
               })
-              .then(resp=> resp.json())
-              .then(resp=>console.log(resp))
+              .then(response=> response.json())
+              .then(response=>console.log(response))
               alert("Warehouse Receipt is created");    
             }).catch(function (err) {
               alert("Warehouse receipt generation failed");
@@ -385,7 +385,7 @@ App = {
         }).then(function (result, err) {
           if (result) { 
             fetch(`${App.baseUrl}/load`)
-              .then(resp=> resp.json())
+              .then(response=> response.json())
               .then(receiptsData => {
 
                 var position = 0;
@@ -403,8 +403,8 @@ App = {
                   headers:{'Content-Type': 'application/json'},
                   body: JSON.stringify(receiptsData)
                 })
-                .then(resp=> resp.json())
-                .then(resp=>console.log(resp))
+                .then(response=> response.json())
+                .then(response=>console.log(response))
                   alert("Successfully updated price for the receipt");            
                   location.reload();
               })
@@ -432,7 +432,7 @@ App = {
           if (result) { 
            
             fetch(`${App.baseUrl}/load`)
-              .then(resp=> resp.json())
+              .then(response=> response.json())
               .then(receiptsData => {
 
                 var position = 0;
@@ -450,8 +450,8 @@ App = {
                   headers:{'Content-Type': 'application/json'},
                   body: JSON.stringify(receiptsData)
                 })
-                .then(resp=> resp.json())
-                .then(resp=>console.log(resp))
+                .then(response=> response.json())
+                .then(response=>console.log(response))
                   alert("Successfully allow the receipt burn");
              })
           }
@@ -478,7 +478,7 @@ App = {
           if (result) { 
            
             fetch(`${App.baseUrl}/load`)
-              .then(resp=> resp.json())
+              .then(response=> response.json())
               .then(receiptsData => {
 
                 var position = 0;
@@ -498,8 +498,8 @@ App = {
                   headers:{'Content-Type': 'application/json'},
                   body: JSON.stringify(receiptsData)
                 })
-                .then(resp=> resp.json())
-                .then(resp=>console.log(resp))
+                .then(response=> response.json())
+                .then(response=>console.log(response))
               alert("Receipt destroyed successfully");
              })
           }
@@ -521,7 +521,7 @@ App = {
         return false;
       } else {
         fetch(`${App.baseUrl}/load`)
-        .then(resp=> resp.json())
+        .then(response=> response.json())
         .then(receiptsData => {
           for (i=0; i<=receiptsData.length; i++) {
             if ((receiptsData[i].tokenId == tokenId) && (receiptsData[i].active == true)) {
@@ -564,7 +564,7 @@ App = {
         }).then(function (result, err) {
           if (result) {
             fetch(`${App.baseUrl}/load`)
-              .then(resp=> resp.json())
+              .then(response=> response.json())
               .then(receiptsData => {
                 var position = 0;
                 for (i=0; i<=receiptsData.length; i++) {
@@ -581,8 +581,8 @@ App = {
                   headers:{'Content-Type': 'application/json'},
                   body: JSON.stringify(receiptsData)
                 })
-                .then(resp=> resp.json())
-                .then(resp=>console.log(resp))
+                .then(response=> response.json())
+                .then(response=>console.log(response))
                 alert("Bid placed successfully");
                 location.reload();
 
